@@ -64,6 +64,12 @@ let matchmakingActive=false,reconnectTimer=null,rematchToastTimer=null,aiMoveTim
 let socket=null,multiplayerMatchId=null,multiplayerConnected=false;
 let board=['','','','','','','','',''],isGameActive=true;
 const cells=document.querySelectorAll('.cell'),statusElement=document.getElementById('status');
+const livePlayersCountElement=document.getElementById('livePlayersCount');
+const matchesPlayedCountElement=document.getElementById('matchesPlayedCount');
+function updateLiveStats(m){
+  if(Number.isFinite(Number(m.activePlayers))) livePlayersCountElement.textContent=Number(m.activePlayers);
+  if(Number.isFinite(Number(m.matchesPlayedToday))) matchesPlayedCountElement.textContent=Number(m.matchesPlayedToday);
+}
 const winningConditions=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
 
 function toggleMenu(){playClickSound();document.getElementById('mobileMenu').classList.toggle('active')}
@@ -96,6 +102,7 @@ socket.onclose=()=>{multiplayerConnected=false;if(matchmakingActive&&!multiplaye
 socket.onerror=()=>{multiplayerConnected=false};
 socket.onmessage=e=>{
 let m;try{m=JSON.parse(e.data)}catch(_){return}
+if(m.type==='serverStats'){updateLiveStats(m);return}
 if(m.type==='waiting'){document.getElementById('matchmakingStatusText').textContent='Waiting for a real player...';return}
 if(m.type==='matchFound'){matchmakingActive=false;rematchRequestedByMe=false;rematchRequestedByOpponent=false;multiplayerMatchId=m.matchId;opponentName=m.opponentName||'Opponent';mySymbol=m.symbol;opponentSymbol=mySymbol==='X'?'O':'X';isMyTurn=!!m.yourTurn;document.getElementById('arenaSection').classList.remove('active');document.getElementById('gameSection').classList.add('active');resetGame();return}
 if(m.type==='move'){if(Array.isArray(m.board))board=m.board;isMyTurn=m.nextTurn===mySymbol;renderBoard();if(!m.gameOver)statusElement.textContent=isMyTurn?`${myName} (${mySymbol})'s turn`:`${opponentName} (${opponentSymbol}) is thinking...`;return}
@@ -143,4 +150,4 @@ window.addEventListener('beforeunload',()=>{if(socket&&socket.readyState===WebSo
 document.getElementById('playerNameInput').addEventListener('keydown',e=>{if(e.key==='Enter')saveNameAndMatch()});
 </script>
 </body>
-                                                                                                                                 </html>
+                                                                                                                                   </html>
