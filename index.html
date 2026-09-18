@@ -602,9 +602,48 @@
             color: #9ca3af;
             margin-bottom: 30px;
         }
+
+        /* Rematch notification */
+        .rematch-toast {
+            position: fixed;
+            top: 22px;
+            left: 50%;
+            transform: translate(-50%, -140px);
+            width: min(92vw, 420px);
+            padding: 15px 18px;
+            border: 1px solid rgba(245, 158, 11, 0.55);
+            border-radius: 14px;
+            background: rgba(17, 24, 39, 0.96);
+            backdrop-filter: blur(12px);
+            box-shadow: 0 12px 35px rgba(0,0,0,.35);
+            z-index: 9999;
+            text-align: center;
+            transition: transform .28s ease, opacity .28s ease;
+            opacity: 0;
+            pointer-events: none;
+        }
+        .rematch-toast.show {
+            transform: translate(-50%, 0);
+            opacity: 1;
+        }
+        .rematch-toast-title {
+            font-weight: 900;
+            font-size: 1rem;
+            margin-bottom: 4px;
+        }
+        .rematch-toast-text {
+            color: #d1d5db;
+            font-size: .9rem;
+        }
     </style>
 </head>
 <body>
+
+    <!-- Rematch notification -->
+    <div class="rematch-toast" id="rematchToast" role="status" aria-live="polite">
+        <div class="rematch-toast-title" id="rematchToastTitle">Rematch Request</div>
+        <div class="rematch-toast-text" id="rematchToastText">Your opponent wants another round.</div>
+    </div>
 
     <!-- Navbar -->
     <nav>
@@ -789,7 +828,7 @@
             </div>
 
             <div class="game-controls">
-                <button class="btn-secondary" onclick="restartCurrentMode()">New Match</button>
+                <button class="btn-secondary" id="newMatchBtn" onclick="restartCurrentMode()">Rematch</button>
                 <button class="btn-secondary" onclick="showHome()">Exit Arena</button>
             </div>
             <button class="change-name-btn" onclick="promptChangeName()">Change Player Name</button>
@@ -799,7 +838,7 @@
                 <div class="modal-title" id="modalTitle">Match Over</div>
                 <div class="modal-subtitle" id="modalSubtitle">Preparing next battle...</div>
                 <div class="modal-btn-group">
-                    <button class="btn-primary" onclick="restartCurrentMode()">New Match</button>
+                    <button class="btn-primary" id="rematchBtn" onclick="restartCurrentMode()">Rematch</button>
                     <button class="btn-secondary" onclick="showHome()" style="width: 100%;">Exit Arena</button>
                 </div>
             </div>
@@ -954,6 +993,13 @@
 
         function showHome() {
             playClickSound();
+            // Tell the multiplayer server that this player intentionally left.
+            if (!isAIMode && socket && socket.readyState === WebSocket.OPEN && multiplayerMatchId) {
+                socket.send(JSON.stringify({ type: 'leaveMatch', matchId: multiplayerMatchId }));
+                multiplayerMatchId = null;
+            }
+            rematchRequestedByMe = false;
+            resetRematchButtons();
             document.getElementById('gameOverModal').classList.remove('active');
             document.getElementById('main-website-content').style.display = 'block';
             document.getElementById('arenaSection').classList.remove('active');
@@ -968,6 +1014,8 @@
         let isMyTurn = true;
         let currentDifficulty = "medium";
         let isAIMode = false;
+        let rematchRequestedByMe = false;
+        let rematchToastTimer = null;
 
         function handleEnterArena() {
             playClickSound();
@@ -1029,8 +1077,62 @@
             if (isAIMode) {
                 startAIMatch(currentDifficulty);
             } else {
-                startMatchmaking();
+                requestRematch();
             }
+        }
+
+        function requestRematch() {
+            if (!multiplayerMatchId || !socket || socket.readyState !== WebSocket.OPEN) {
+                startMatchmaking();
+                return;
+            }
+
+            // Prevent duplicate requests while the other player is deciding.
+            if (rematchRequestedByMe) return;
+            rematchRequestedByMe = true;
+
+            const btn = document.getElementById('rematchBtn');
+            const gameBtn = document.getElementById('newMatchBtn');
+            if (btn) {
+                btn.disabled = true;
+                btn.textContent = 'Requested ✓';
+            }
+            if (gameBtn) {
+                gameBtn.disabled = true;
+                gameBtn.textContent = 'Requested ✓';
+            }
+
+            document.getElementById('modalTitle').textContent = 'Rematch Requested';
+            document.getElementById('modalSubtitle').textContent = 'Waiting for your opponent to accept...';
+            document.getElementById('gameOverModal').classList.add('active');
+
+            socket.send(JSON.stringify({
+                type: 'rematchRequest',
+                matchId: multiplayerMatchId
+            }));
+        }
+
+        function showRematchNotification() {
+            const toast = document.getElementById('rematchToast');
+            const title = document.getElementById('rematchToastTitle');
+            const text = document.getElementById('rematchToastText');
+            if (!toast) return;
+
+            title.textContent = '🔁 Rematch Request';
+            text.textContent = `${opponentName} wants another round!`;
+            toast.classList.add('show');
+            playClickSound();
+
+            clearTimeout(rematchToastTimer);
+            rematchToastTimer = setTimeout(() => toast.classList.remove('show'), 5000);
+        }
+
+        function resetRematchButtons() {
+            rematchRequestedByMe = false;
+            const btn = document.getElementById('rematchBtn');
+            const gameBtn = document.getElementById('newMatchBtn');
+            if (btn) { btn.disabled = false; btn.textContent = 'Rematch'; }
+            if (gameBtn) { gameBtn.disabled = false; gameBtn.textContent = 'Rematch'; }
         }
 
         function saveNameAndMatch() {
@@ -1146,6 +1248,39 @@
                     setTimeout(() => {
                         document.getElementById('gameOverModal').classList.add('active');
                     }, 1100);
+                    return;
+                }
+
+                if (msg.type === 'rematchRequested') {
+                    isGameActive = false;
+                    rematchRequestedByMe = false;
+                    showRematchNotification();
+                    const btn = document.getElementById('rematchBtn');
+                    const gameBtn = document.getElementById('newMatchBtn');
+                    if (btn) { btn.disabled = false; btn.textContent = 'Accept Rematch'; }
+                    if (gameBtn) { gameBtn.disabled = false; gameBtn.textContent = 'Accept Rematch'; }
+                    document.getElementById('modalTitle').textContent = 'Rematch? 🔁';
+                    document.getElementById('modalSubtitle').textContent = `${opponentName} wants another round.`;
+                    document.getElementById('gameOverModal').classList.add('active');
+                    return;
+                }
+
+                if (msg.type === 'rematchStart') {
+                    const toast = document.getElementById('rematchToast');
+                    if (toast) toast.classList.remove('show');
+                    rematchRequestedByMe = false;
+                    multiplayerMatchId = msg.matchId;
+                    mySymbol = msg.symbol;
+                    opponentSymbol = mySymbol === 'X' ? 'O' : 'X';
+                    isMyTurn = msg.yourTurn;
+                    resetRematchButtons();
+                    document.getElementById('gameOverModal').classList.remove('active');
+                    document.getElementById('arenaSection').classList.remove('active');
+                    document.getElementById('gameSection').classList.add('active');
+                    resetGame();
+                    statusElement.textContent = isMyTurn
+                        ? `${myName} (${mySymbol})'s turn`
+                        : `${opponentName} (${opponentSymbol}) is thinking...`;
                     return;
                 }
 
@@ -1387,7 +1522,15 @@
             return false;
         }
 
+        // Cleanly notify the server when the player leaves the page.
+        window.addEventListener('pagehide', () => {
+            if (!isAIMode && socket && socket.readyState === WebSocket.OPEN && multiplayerMatchId) {
+                socket.send(JSON.stringify({ type: 'leaveMatch', matchId: multiplayerMatchId }));
+            }
+        });
+
         function resetGame() {
+            resetRematchButtons();
             document.getElementById('gameOverModal').classList.remove('active');
             board = ['', '', '', '', '', '', '', '', ''];
             isGameActive = true;
@@ -1396,4 +1539,5 @@
         }
     </script>
 </body>
-</html>
+    </html>
+        
