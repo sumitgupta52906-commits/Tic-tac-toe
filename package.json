@@ -1,13 +1,13 @@
 {
-  "name": "ox-real-multiplayer",
-  "version": "1.0.0",
-  "description": "OX real-time multiplayer Tic-Tac-Toe game",
+  "name": "ox-multiplayer",
+  "version": "2.0.0",
+  "private": true,
+  "description": "OX multiplayer tic-tac-toe with AI and WebSocket matchmaking",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
   "dependencies": {
-    "ws": "^8.18.0"
+    "ws": "^8.18.3"
   }
-
 }
