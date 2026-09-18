@@ -85,7 +85,7 @@ function createMatch(player1, player2) {
     const match = {
         id: matchId,
         players: [p1, p2],
-        board: ["", "", "", "", "", "", "", ""],
+        board: ["", "", "", "", "", "", "", "", ""], // <-- Yahan 9 elements kar diye hain fix
         turn: "X",
         gameOver: false
     };
@@ -114,20 +114,17 @@ function addToQueue(ws, name) {
 
     name = String(name || "Player").trim().slice(0, 20) || "Player";
 
-    // Already waiting
     if (queuedPlayers.has(ws)) {
         send(ws, { type: "waiting" });
         return;
     }
 
-    // Ignore duplicate joinQueue if player is already in a match
     if (getMatchForPlayer(ws)) {
         return;
     }
 
     const player = { ws, name };
 
-    // Find another connected player
     while (waitingQueue.length > 0) {
         const opponentWs = waitingQueue.shift();
 
@@ -218,8 +215,6 @@ function handleMove(ws, msg) {
             });
         }
 
-        // IMPORTANT:
-        // Your existing index.html expects result to be X/O/draw.
         for (const p of match.players) {
             send(p.ws, {
                 type: "gameOver",
@@ -363,3 +358,4 @@ wss.on("connection", ws => {
 server.listen(PORT, HOST, () => {
     console.log(`OX server running on port ${PORT}`);
 });
+        
