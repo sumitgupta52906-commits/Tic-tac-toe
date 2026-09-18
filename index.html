@@ -431,6 +431,38 @@
             color: #f59e0b;
         }
 
+        /* Rematch Notification */
+        .rematch-toast {
+            position: fixed;
+            top: 78px;
+            left: 50%;
+            transform: translate(-50%, -20px);
+            width: calc(100% - 32px);
+            max-width: 420px;
+            background: #111827;
+            border: 1px solid #f59e0b;
+            border-radius: 10px;
+            padding: 14px 16px;
+            z-index: 500;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity .2s ease, transform .2s ease;
+            box-shadow: 0 12px 30px rgba(0,0,0,.45);
+        }
+        .rematch-toast.show {
+            opacity: 1;
+            transform: translate(-50%, 0);
+        }
+        .rematch-toast-title {
+            color: #f59e0b;
+            font-weight: 900;
+            margin-bottom: 4px;
+        }
+        .rematch-toast-text {
+            color: #d1d5db;
+            font-size: .9rem;
+        }
+
         /* Game Over Popup Modal Styles - Slow & Smooth Fade Animation */
         .game-over-modal {
             display: none;
@@ -602,44 +634,10 @@
             color: #9ca3af;
             margin-bottom: 30px;
         }
-
-        /* Rematch notification */
-        .rematch-toast {
-            position: fixed;
-            top: 22px;
-            left: 50%;
-            transform: translate(-50%, -140px);
-            width: min(92vw, 420px);
-            padding: 15px 18px;
-            border: 1px solid rgba(245, 158, 11, 0.55);
-            border-radius: 14px;
-            background: rgba(17, 24, 39, 0.96);
-            backdrop-filter: blur(12px);
-            box-shadow: 0 12px 35px rgba(0,0,0,.35);
-            z-index: 9999;
-            text-align: center;
-            transition: transform .28s ease, opacity .28s ease;
-            opacity: 0;
-            pointer-events: none;
-        }
-        .rematch-toast.show {
-            transform: translate(-50%, 0);
-            opacity: 1;
-        }
-        .rematch-toast-title {
-            font-weight: 900;
-            font-size: 1rem;
-            margin-bottom: 4px;
-        }
-        .rematch-toast-text {
-            color: #d1d5db;
-            font-size: .9rem;
-        }
     </style>
 </head>
 <body>
 
-    <!-- Rematch notification -->
     <div class="rematch-toast" id="rematchToast" role="status" aria-live="polite">
         <div class="rematch-toast-title" id="rematchToastTitle">Rematch Request</div>
         <div class="rematch-toast-text" id="rematchToastText">Your opponent wants another round.</div>
@@ -828,7 +826,7 @@
             </div>
 
             <div class="game-controls">
-                <button class="btn-secondary" id="newMatchBtn" onclick="restartCurrentMode()">Rematch</button>
+                <button class="btn-secondary" onclick="restartCurrentMode()">New Match</button>
                 <button class="btn-secondary" onclick="showHome()">Exit Arena</button>
             </div>
             <button class="change-name-btn" onclick="promptChangeName()">Change Player Name</button>
@@ -838,7 +836,7 @@
                 <div class="modal-title" id="modalTitle">Match Over</div>
                 <div class="modal-subtitle" id="modalSubtitle">Preparing next battle...</div>
                 <div class="modal-btn-group">
-                    <button class="btn-primary" id="rematchBtn" onclick="restartCurrentMode()">Rematch</button>
+                    <button class="btn-primary" onclick="restartCurrentMode()">New Match</button>
                     <button class="btn-secondary" onclick="showHome()" style="width: 100%;">Exit Arena</button>
                 </div>
             </div>
@@ -993,13 +991,9 @@
 
         function showHome() {
             playClickSound();
-            // Tell the multiplayer server that this player intentionally left.
-            if (!isAIMode && socket && socket.readyState === WebSocket.OPEN && multiplayerMatchId) {
-                socket.send(JSON.stringify({ type: 'leaveMatch', matchId: multiplayerMatchId }));
-                multiplayerMatchId = null;
-            }
+            matchmakingActive = false;
             rematchRequestedByMe = false;
-            resetRematchButtons();
+            hideRematchToast();
             document.getElementById('gameOverModal').classList.remove('active');
             document.getElementById('main-website-content').style.display = 'block';
             document.getElementById('arenaSection').classList.remove('active');
@@ -1015,6 +1009,8 @@
         let currentDifficulty = "medium";
         let isAIMode = false;
         let rematchRequestedByMe = false;
+        let matchmakingActive = false;
+        let reconnectTimer = null;
         let rematchToastTimer = null;
 
         function handleEnterArena() {
@@ -1075,64 +1071,64 @@
 
         function restartCurrentMode() {
             if (isAIMode) {
+                // Keep the original Computer/AI rematch behavior.
                 startAIMatch(currentDifficulty);
             } else {
+                // In multiplayer, rematch the SAME opponent instead of searching again.
                 requestRematch();
             }
         }
 
+        function setRematchButtons(text, disabled) {
+            document.querySelectorAll('[onclick="restartCurrentMode()"]').forEach(btn => {
+                btn.textContent = text;
+                btn.disabled = disabled;
+            });
+        }
+
+        function hideRematchToast() {
+            const toast = document.getElementById('rematchToast');
+            if (toast) toast.classList.remove('show');
+            if (rematchToastTimer) {
+                clearTimeout(rematchToastTimer);
+                rematchToastTimer = null;
+            }
+        }
+
+        function showRematchNotification() {
+            const toast = document.getElementById('rematchToast');
+            const text = document.getElementById('rematchToastText');
+            if (!toast) return;
+            if (text) text.textContent = `${opponentName} wants another round!`;
+            toast.classList.add('show');
+            playClickSound();
+            if (rematchToastTimer) clearTimeout(rematchToastTimer);
+            rematchToastTimer = setTimeout(hideRematchToast, 5000);
+        }
+
         function requestRematch() {
+            if (isAIMode) {
+                startAIMatch(currentDifficulty);
+                return;
+            }
+
             if (!multiplayerMatchId || !socket || socket.readyState !== WebSocket.OPEN) {
+                // If the multiplayer connection is gone, start a fresh matchmaking search.
                 startMatchmaking();
                 return;
             }
 
-            // Prevent duplicate requests while the other player is deciding.
             if (rematchRequestedByMe) return;
+
             rematchRequestedByMe = true;
-
-            const btn = document.getElementById('rematchBtn');
-            const gameBtn = document.getElementById('newMatchBtn');
-            if (btn) {
-                btn.disabled = true;
-                btn.textContent = 'Requested ✓';
-            }
-            if (gameBtn) {
-                gameBtn.disabled = true;
-                gameBtn.textContent = 'Requested ✓';
-            }
-
+            setRematchButtons('Requested ✓', true);
             document.getElementById('modalTitle').textContent = 'Rematch Requested';
             document.getElementById('modalSubtitle').textContent = 'Waiting for your opponent to accept...';
-            document.getElementById('gameOverModal').classList.add('active');
 
             socket.send(JSON.stringify({
                 type: 'rematchRequest',
                 matchId: multiplayerMatchId
             }));
-        }
-
-        function showRematchNotification() {
-            const toast = document.getElementById('rematchToast');
-            const title = document.getElementById('rematchToastTitle');
-            const text = document.getElementById('rematchToastText');
-            if (!toast) return;
-
-            title.textContent = '🔁 Rematch Request';
-            text.textContent = `${opponentName} wants another round!`;
-            toast.classList.add('show');
-            playClickSound();
-
-            clearTimeout(rematchToastTimer);
-            rematchToastTimer = setTimeout(() => toast.classList.remove('show'), 5000);
-        }
-
-        function resetRematchButtons() {
-            rematchRequestedByMe = false;
-            const btn = document.getElementById('rematchBtn');
-            const gameBtn = document.getElementById('newMatchBtn');
-            if (btn) { btn.disabled = false; btn.textContent = 'Rematch'; }
-            if (gameBtn) { gameBtn.disabled = false; gameBtn.textContent = 'Rematch'; }
         }
 
         function saveNameAndMatch() {
@@ -1170,14 +1166,20 @@
 
             socket.onopen = () => {
                 multiplayerConnected = true;
-                if (myName) {
+                // Send joinQueue exactly once per connection. This removes the old polling delay/duplicate join.
+                if (myName && matchmakingActive) {
                     socket.send(JSON.stringify({ type: 'joinQueue', name: myName }));
+                    document.getElementById('matchmakingStatusText').textContent = 'Waiting for a real player...';
                 }
             };
 
             socket.onclose = () => {
                 multiplayerConnected = false;
-                multiplayerMatchId = null;
+                if (!multiplayerMatchId && matchmakingActive) {
+                    document.getElementById('matchmakingStatusText').textContent = 'Reconnecting to multiplayer server...';
+                    clearTimeout(reconnectTimer);
+                    reconnectTimer = setTimeout(connectMultiplayer, 400);
+                }
             };
 
             socket.onerror = () => {
@@ -1194,6 +1196,8 @@
                 }
 
                 if (msg.type === 'matchFound') {
+                    matchmakingActive = false;
+                    rematchRequestedByMe = false;
                     multiplayerMatchId = msg.matchId;
                     opponentName = msg.opponentName;
                     mySymbol = msg.symbol;
@@ -1255,10 +1259,7 @@
                     isGameActive = false;
                     rematchRequestedByMe = false;
                     showRematchNotification();
-                    const btn = document.getElementById('rematchBtn');
-                    const gameBtn = document.getElementById('newMatchBtn');
-                    if (btn) { btn.disabled = false; btn.textContent = 'Accept Rematch'; }
-                    if (gameBtn) { gameBtn.disabled = false; gameBtn.textContent = 'Accept Rematch'; }
+                    setRematchButtons('Accept Rematch', false);
                     document.getElementById('modalTitle').textContent = 'Rematch? 🔁';
                     document.getElementById('modalSubtitle').textContent = `${opponentName} wants another round.`;
                     document.getElementById('gameOverModal').classList.add('active');
@@ -1266,14 +1267,14 @@
                 }
 
                 if (msg.type === 'rematchStart') {
-                    const toast = document.getElementById('rematchToast');
-                    if (toast) toast.classList.remove('show');
+                    hideRematchToast();
                     rematchRequestedByMe = false;
+                    matchmakingActive = false;
                     multiplayerMatchId = msg.matchId;
                     mySymbol = msg.symbol;
                     opponentSymbol = mySymbol === 'X' ? 'O' : 'X';
                     isMyTurn = msg.yourTurn;
-                    resetRematchButtons();
+                    setRematchButtons('New Match', false);
                     document.getElementById('gameOverModal').classList.remove('active');
                     document.getElementById('arenaSection').classList.remove('active');
                     document.getElementById('gameSection').classList.add('active');
@@ -1309,6 +1310,11 @@
 
         function startMatchmaking() {
             playClickSound();
+            isAIMode = false;
+            rematchRequestedByMe = false;
+            multiplayerMatchId = null;
+            matchmakingActive = true;
+            hideRematchToast();
             document.getElementById('gameOverModal').classList.remove('active');
             document.getElementById('main-website-content').style.display = 'none';
             document.getElementById('arenaSection').classList.add('active');
@@ -1321,16 +1327,6 @@
             document.getElementById('matchmakingStatusText').textContent = 'Connecting to multiplayer server...';
 
             connectMultiplayer();
-
-            const waitForConnection = setInterval(() => {
-                if (socket && socket.readyState === WebSocket.OPEN) {
-                    clearInterval(waitForConnection);
-                    socket.send(JSON.stringify({ type: 'joinQueue', name: myName }));
-                    document.getElementById('matchmakingStatusText').textContent = 'Waiting for a real player...';
-                }
-            }, 100);
-
-            setTimeout(() => clearInterval(waitForConnection), 10000);
         }
 
         const cells = document.querySelectorAll('.cell');
@@ -1522,16 +1518,9 @@
             return false;
         }
 
-        // Cleanly notify the server when the player leaves the page.
-        window.addEventListener('pagehide', () => {
-            if (!isAIMode && socket && socket.readyState === WebSocket.OPEN && multiplayerMatchId) {
-                socket.send(JSON.stringify({ type: 'leaveMatch', matchId: multiplayerMatchId }));
-            }
-        });
-
         function resetGame() {
-            resetRematchButtons();
             document.getElementById('gameOverModal').classList.remove('active');
+            setRematchButtons('New Match', false);
             board = ['', '', '', '', '', '', '', '', ''];
             isGameActive = true;
             renderBoard();
@@ -1540,4 +1529,4 @@
     </script>
 </body>
     </html>
-        
+            
