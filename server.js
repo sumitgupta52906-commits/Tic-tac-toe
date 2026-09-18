@@ -21,6 +21,22 @@ const wss = new WebSocketServer({ server });
 const waiting = [];
 const matches = new Map();
 const clients = new Map();
+let activePlayers=0;
+let matchesPlayedToday=0;
+let statsDate=getTodayKey();
+function getTodayKey(){
+  const d=new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function resetDailyStatsIfNeeded(){
+  const today=getTodayKey();
+  if(today!==statsDate){statsDate=today;matchesPlayedToday=0;}
+}
+function broadcastStats(){
+  resetDailyStatsIfNeeded();
+  const msg={type:'serverStats',activePlayers,matchesPlayedToday};
+  for(const ws of clients.keys()) send(ws,msg);
+}
 
 function cleanName(name) {
   const s = String(name || "Player").trim().slice(0,20);
@@ -39,7 +55,10 @@ function winner(board) {
   return board.includes("") ? null : "tie";
 }
 function finishMatch(match, result) {
+  if(match.gameOver)return;
   match.gameOver = true;
+  resetDailyStatsIfNeeded();
+  matchesPlayedToday += 1;
   send(match.x.ws,{type:"gameOver",board:match.board,result});
   send(match.o.ws,{type:"gameOver",board:match.board,result});
 }
@@ -74,6 +93,7 @@ function leaveMatch(ws, notify=true) {
   c.matchId=null;
   if(other && clients.has(other)) clients.get(other).matchId=null;
   if(notify) send(other,{type:"opponentLeft"});
+  broadcastStats();
 }
 function startRematch(match) {
   match.board=["","","","","","","","",""];
@@ -84,7 +104,11 @@ function startRematch(match) {
 
 wss.on("connection", ws => {
   clients.set(ws,{name:"Player",matchId:null});
+  activePlayers += 1;
   send(ws,{type:"serverReady"});
+  resetDailyStatsIfNeeded();
+  send(ws,{type:"serverStats",activePlayers,matchesPlayedToday});
+  broadcastStats();
   ws.on("message", raw => {
     let m; try{m=JSON.parse(raw.toString())}catch{return send(ws,{type:"error",message:"Invalid message"})}
     const c=clients.get(ws);
@@ -146,8 +170,14 @@ wss.on("connection", ws => {
     }
   });
 
-  ws.on("close",()=>{removeFromQueue(ws);leaveMatch(ws,true);clients.delete(ws)});
+  ws.on("close",()=>{
+    removeFromQueue(ws);
+    leaveMatch(ws,true);
+    clients.delete(ws);
+    activePlayers=Math.max(0,activePlayers-1);
+    broadcastStats();
+  });
 });
 
 server.listen(PORT,()=>console.log(`OX server running on port ${PORT}`));
-    
+  
