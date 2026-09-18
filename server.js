@@ -87,7 +87,8 @@ function createMatch(player1, player2) {
         players: [p1, p2],
         board: ["", "", "", "", "", "", "", "", ""], // <-- Yahan 9 elements kar diye hain fix
         turn: "X",
-        gameOver: false
+        gameOver: false,
+        rematchReady: new Set()
     };
 
     matches.set(matchId, match);
@@ -284,6 +285,53 @@ function checkWinner(board) {
     return null;
 }
 
+function startRematch(match) {
+    const firstIsX = Math.random() < 0.5;
+
+    match.players[0].symbol = firstIsX ? "X" : "O";
+    match.players[1].symbol = firstIsX ? "O" : "X";
+    match.board = ["", "", "", "", "", "", "", "", ""];
+    match.turn = "X";
+    match.gameOver = false;
+    match.rematchReady.clear();
+
+    for (const p of match.players) {
+        send(p.ws, {
+            type: "rematchStart",
+            matchId: match.id,
+            symbol: p.symbol,
+            yourTurn: p.symbol === "X"
+        });
+    }
+}
+
+function requestRematch(ws, matchId) {
+    const match = matches.get(matchId);
+    if (!match || !match.gameOver) {
+        send(ws, { type: "error", message: "Rematch is not available yet." });
+        return;
+    }
+
+    const player = match.players.find(p => p.ws === ws);
+    if (!player) {
+        send(ws, { type: "error", message: "You are not part of this match." });
+        return;
+    }
+
+    const wasAlreadyReady = match.rematchReady.has(ws);
+    match.rematchReady.add(ws);
+
+    const opponent = match.players.find(p => p.ws !== ws);
+    // Notify the opponent only on the first request, so repeated taps cannot spam them.
+    if (opponent && !wasAlreadyReady) {
+        send(opponent.ws, { type: "rematchRequested" });
+    }
+
+    if (match.rematchReady.size === 2) {
+        startRematch(match);
+    }
+}
+
 function leaveMatch(ws, matchId) {
     const match = matches.get(matchId);
 
@@ -330,6 +378,11 @@ wss.on("connection", ws => {
             return;
         }
 
+        if (msg.type === "rematchRequest") {
+            requestRematch(ws, msg.matchId);
+            return;
+        }
+
         if (msg.type === "leaveMatch") {
             leaveMatch(ws, msg.matchId);
             return;
@@ -358,4 +411,4 @@ wss.on("connection", ws => {
 server.listen(PORT, HOST, () => {
     console.log(`OX server running on port ${PORT}`);
 });
-        
+            
