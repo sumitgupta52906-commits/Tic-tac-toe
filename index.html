@@ -1,98 +1,315 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tic Tac Toe Game</title>
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-    body {
-      background-color: #0b0f19;
-      color: #fff;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      padding: 20px;
-    }
-    h1 {
-      margin-bottom: 20px;
-      font-size: 1.8rem;
-      color: #38bdf8;
-    }
-    .board {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      grid-template-rows: repeat(3, 1fr);
-      gap: 10px;
-      width: 100%;
-      max-width: 320px;
-      margin: 0 auto 20px auto;
-    }
-    .cell {
-      width: 100%;
-      height: 0;
-      padding-bottom: 100%; /* Yeh ensure karega ki shuruwat se hi box perfect square ho */
-      background: #131b2e;
-      border: 1px solid #1f2937;
-      border-radius: 8px;
-      position: relative;
-      cursor: pointer;
-      outline: none;
-      transition: background 0.2s;
-    }
-    .cell:hover {
-      background: #1e293b;
-    }
-    .cell::after {
-      content: attr(data-content);
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 2.5rem;
-      font-weight: 900;
-      color: #38bdf8;
-    }
-    .cell.x::after {
-      color: #f43f5e;
-    }
-    .status {
-      font-size: 1.2rem;
-      margin-bottom: 15px;
-      color: #94a3b8;
-    }
-    button#reset {
-      background: #38bdf8;
-      color: #0b0f19;
-      border: none;
-      padding: 10px 20px;
-      font-size: 1rem;
-      font-weight: bold;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-    button#reset:hover {
-      background: #0ea5e9;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>OX - Multiplayer & AI Strategy Game</title>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,Cantarell,sans-serif;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none;touch-action:manipulation}
+body{background:#0b0f19;color:#f3f4f6;overflow-x:hidden;user-select:none;-webkit-font-smoothing:antialiased}
+
+nav{display:flex;justify-content:space-between;align-items:center;padding:20px 24px;background:#0b0f19;border-bottom:1px solid #1f2937;position:sticky;top:0;z-index:100}
+.logo-box{display:flex;gap:6px}
+.logo-badge{background:#f59e0b;color:#0b0f19;font-weight:900;padding:6px 10px;border-radius:6px;font-size:1.1rem}
+.logo-badge.dark{background:#1f2937;color:#f3f4f6;border:1px solid #374151}
+.nav-right{display:flex;align-items:center;gap:16px}
+.sound-toggle-btn{font-size:1.2rem;cursor:pointer;color:#f59e0b;background:#1f2937;border:1px solid #374151;width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;outline:none}
+.menu-icon{font-size:1.5rem;cursor:pointer;color:#f3f4f6;background:none;border:none;outline:none}
+
+.mobile-menu{position:fixed;top:0;left:0;width:100%;height:100%;background:#0b0f19;z-index:200;display:flex;flex-direction:column;padding:24px;transform:translate3d(100%,0,0);transition:transform .3s cubic-bezier(.16,1,.3,1)}
+.mobile-menu.active{transform:translate3d(0,0,0)}
+.menu-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:40px}
+.mobile-menu-links{display:flex;flex-direction:column;gap:24px}
+.mobile-menu-links a{color:#f3f4f6;text-decoration:none;font-size:1.5rem;font-weight:600}
+
+.hero{padding:40px 24px 20px;max-width:800px}
+.subtitle-tag{color:#f59e0b;font-size:.85rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.subtitle-tag:before{content:'';display:inline-block;width:8px;height:8px;background:#f59e0b;border-radius:2px}
+h1{font-size:3rem;line-height:1.1;font-weight:900;text-transform:uppercase;margin-bottom:20px}
+h1 span{color:#f59e0b}
+.hero p{color:#9ca3af;font-size:1.05rem;line-height:1.6;margin-bottom:30px}
+
+.btn-primary{background:#f59e0b;color:#0b0f19;font-weight:800;padding:16px 28px;border:none;border-radius:4px;font-size:1rem;text-transform:uppercase;cursor:pointer;display:inline-block;text-decoration:none;box-shadow:0 4px 14px rgba(245,158,11,.3);text-align:center;width:100%;outline:none}
+.btn-primary:disabled,.btn-secondary:disabled{opacity:.55;cursor:not-allowed}
+
+.arena-section{padding:40px 24px;display:none;max-width:500px;margin:0 auto}
+.arena-section.active{display:block}
+.arena-box{background:#111827;border:1px solid #1f2937;border-radius:12px;padding:30px 24px;box-shadow:0 20px 25px -5px rgba(0,0,0,.5);text-align:center}
+.arena-box h2{font-size:2rem;font-weight:900;text-transform:uppercase;margin-bottom:10px}
+.arena-box p{color:#9ca3af;font-size:.95rem;margin-bottom:24px}
+.input-group{margin-bottom:20px;text-align:left}
+.input-group label{display:block;font-size:.75rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#9ca3af;margin-bottom:8px}
+.input-group input{width:100%;background:#1f2937;border:1px solid #374151;padding:14px 16px;border-radius:6px;color:#f3f4f6;font-size:1rem;outline:none}
+
+.searching-loader{display:none;flex-direction:column;align-items:center;gap:15px;padding:20px}
+.spinner{width:45px;height:45px;border:4px solid #1f2937;border-top:4px solid #f59e0b;border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}
+.back-link{display:block;text-align:center;margin-top:16px;color:#9ca3af;text-decoration:none;font-size:.9rem;outline:none}
+
+.game-section{padding:30px 16px;display:none;flex-direction:column;align-items:center}
+.game-section.active{display:flex}
+.cyber-board-wrapper{position:relative;background:#0b0f19;background-image:linear-gradient(rgba(245,158,11,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(245,158,11,.08) 1px,transparent 1px);background-size:40px 40px;border:1px solid rgba(245,158,11,.2);padding:30px 20px;border-radius:8px;width:100%;max-width:420px;box-shadow:0 20px 30px rgba(0,0,0,.8)}
+.corner-marker{position:absolute;width:10px;height:10px;background:#f59e0b}
+.marker-tl{top:10px;left:10px}
+.marker-tr{top:10px;right:10px}
+.marker-bl{bottom:10px;left:10px}
+.marker-br{bottom:10px;right:10px}
+.game-status{text-align:center;margin-bottom:20px;font-weight:800;color:#f59e0b;font-size:1.1rem;text-transform:uppercase;letter-spacing:1px;min-height:24px}
+
+.board{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);gap:12px;margin-bottom:20px}
+.cell{width:100%;height:0;padding-bottom:100%;background:#131b2e;border:1px solid #1f2937;border-radius:4px;position:relative;cursor:pointer;outline:none}
+.cell::after{content:attr(data-content);position:absolute;top:0;left:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:2.5rem;font-weight:900;color:#f59e0b}
+.cell.x::after{color:#9ca3af}
+
+.game-controls{display:flex;gap:10px;margin-bottom:15px}
+.btn-secondary{flex:1;background:#1f2937;color:#f3f4f6;border:1px solid #374151;padding:12px;font-weight:700;border-radius:4px;cursor:pointer;text-transform:uppercase;font-size:.85rem;outline:none}
+.change-name-btn{background:none;border:none;color:#9ca3af;font-size:.8rem;text-decoration:underline;cursor:pointer;display:block;margin:0 auto;outline:none}
+
+.rematch-toast{position:fixed;top:78px;left:50%;transform:translate(-50%,-20px);width:calc(100% - 32px);max-width:420px;background:#111827;border:1px solid #f59e0b;border-radius:10px;padding:14px 16px;z-index:500;opacity:0;pointer-events:none;transition:opacity .2s ease,transform .2s ease;box-shadow:0 12px 30px rgba(0,0,0,.45)}
+.rematch-toast.show{opacity:1;transform:translate(-50%,0)}
+.rematch-toast-title{color:#f59e0b;font-weight:900;margin-bottom:4px}
+.rematch-toast-text{color:#d1d5db;font-size:.9rem}
+
+.game-over-modal{display:none;position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(11,15,25,.92);backdrop-filter:blur(4px);z-index:50;flex-direction:column;align-items:center;justify-content:center;padding:24px;border-radius:8px;text-align:center}
+.game-over-modal.active{display:flex}
+.modal-title{font-size:1.8rem;font-weight:900;color:#f59e0b;text-transform:uppercase;margin-bottom:8px;letter-spacing:1px}
+.modal-subtitle{color:#9ca3af;font-size:.95rem;margin-bottom:24px}
+.modal-btn-group{display:flex;flex-direction:column;gap:12px;width:100%;max-width:260px}
+
+.stats-section{padding:50px 24px;text-align:center;display:flex;flex-direction:column;gap:40px}
+.stat-box h2{font-size:3.2rem;font-weight:900;color:#f59e0b;margin-bottom:6px}
+.stat-box p{color:#9ca3af;font-size:.95rem;font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.stat-demo-note{display:block;color:#6b7280;font-size:.68rem;font-weight:600;letter-spacing:.8px;text-transform:uppercase;margin-top:4px}
+
+.section-title-box{padding:40px 24px 20px}
+.section-title-box h2{font-size:2.2rem;font-weight:900;text-transform:uppercase}
+.cards-container{padding:0 24px 30px;display:flex;flex-direction:column;gap:20px}
+.feature-card{background:#111827;border:1px solid #1f2937;border-radius:12px;padding:28px 24px}
+.feature-card .step-num{font-size:2.5rem;font-weight:900;color:#f59e0b;margin-bottom:12px}
+.feature-card h3{font-size:1.4rem;font-weight:800;margin-bottom:10px;color:#f3f4f6}
+.feature-card p{color:#9ca3af;font-size:.95rem;line-height:1.5}
+.testimonial-card{background:#111827;border:1px solid #1f2937;border-radius:12px;padding:28px 24px;margin:0 24px 20px}
+.testimonial-card .quote-icon{color:#f59e0b;font-size:1.5rem;margin-bottom:10px}
+.testimonial-card p{font-size:1.1rem;font-weight:500;line-height:1.5;margin-bottom:16px;color:#f3f4f6}
+.testimonial-card .author{color:#f59e0b;font-size:.9rem;font-weight:800;letter-spacing:1px;text-transform:uppercase}
+.footer-cta{padding:60px 24px;text-align:center;background:linear-gradient(180deg,#0b0f19 0%,#111827 100%)}
+.footer-cta h2{font-size:2.5rem;font-weight:900;text-transform:uppercase;margin-bottom:12px}
+.footer-cta p{color:#9ca3af;margin-bottom:30px}
+</style>
 </head>
+
 <body>
 
-  <h1>Tic Tac Toe</h1>
-  <div class="status" id="statusText">Aapki baari hai!</div>
-  
+<div class="rematch-toast" id="rematchToast" role="status" aria-live="polite">
+  <div class="rematch-toast-title" id="rematchToastTitle">Rematch Request</div>
+  <div class="rematch-toast-text" id="rematchToastText">Your opponent wants another round.</div>
+</div>
+
+<nav>
+  <div class="logo-box">
+    <div class="logo-badge">OX</div>
+    <div class="logo-badge dark">OX</div>
+  </div>
+
+  <div class="nav-right">
+    <button class="sound-toggle-btn" id="soundToggleBtn" onclick="toggleSound()" title="Toggle Sound">🔊</button>
+    <button class="menu-icon" onclick="toggleMenu()">☰</button>
+  </div>
+</nav>
+
+<div class="mobile-menu" id="mobileMenu">
+  <div class="menu-header">
+    <div class="logo-box">
+      <div class="logo-badge">OX</div>
+      <div class="logo-badge dark">OX</div>
+    </div>
+    <button class="menu-icon" onclick="toggleMenu()">✕</button>
+  </div>
+
+  <div class="mobile-menu-links">
+    <a href="#home-content" onclick="closeMenuAndGoHome()">Home</a>
+    <a href="#stats" onclick="toggleMenu()">Leaderboard</a>
+    <a href="#howitworks" onclick="toggleMenu()">How to Play</a>
+    <a href="#whyox" onclick="toggleMenu()">Community</a>
+  </div>
+</div>
+
+<div id="main-website-content">
+
+<section class="hero" id="home-content">
+  <div class="subtitle-tag">Multiplayer Strategy</div>
+  <h1>Think fast.<br>Move smart.<br><span>Win.</span></h1>
+  <p>Ox is the multiplayer strategy game built for quick, decisive battles. No downloads. No waiting. Just pure skill.</p>
+</section>
+
+<section class="footer-cta" style="padding-top:20px">
+  <h2>Ready to Play?</h2>
+  <p>Join players already in the arena.</p>
+
+  <div style="display:flex;flex-direction:column;gap:12px;max-width:300px;margin:0 auto">
+    <button class="btn-primary" onclick="handleEnterArena()">Enter The Arena</button>
+    <button class="btn-primary" onclick="handlePlayerVsAI()" style="background:#1f2937;color:#f59e0b;border:1px solid #f59e0b">Player vs AI</button>
+  </div>
+</section>
+
+<!-- DEMO / ESTIMATED STATS -->
+<section class="stats-section" id="stats">
+
+  <div class="stat-box">
+    <h2 id="livePlayersCount">12</h2>
+    <p>Active Players Online</p>
+    <small class="stat-demo-note">Demo Estimate</small>
+  </div>
+
+  <div class="stat-box">
+    <h2 id="matchesPlayedCount">147</h2>
+    <p>Matches Played Today</p>
+    <small class="stat-demo-note">Demo Estimate</small>
+  </div>
+
+  <div class="stat-box">
+    <h2>&lt; 30s</h2>
+    <p>Avg Match Time</p>
+  </div>
+
+</section>
+
+<div class="section-title-box" id="howitworks">
+  <h2>How It Works</h2>
+</div>
+
+<div class="cards-container">
+
+  <div class="feature-card">
+    <div class="step-num">01</div>
+    <h3>Jump In</h3>
+    <p>No account needed. Hit Play and you're matched instantly with a live opponent.</p>
+  </div>
+
+  <div class="feature-card">
+    <div class="step-num">02</div>
+    <h3>Outthink</h3>
+    <p>Place your pieces, read your opponent, and control the board. Every move counts.</p>
+  </div>
+
+  <div class="feature-card">
+    <div class="step-num">03</div>
+    <h3>Dominate</h3>
+    <p>Win the match and prove your skills.</p>
+  </div>
+
+</div>
+
+<div class="section-title-box" id="whyox">
+  <h2>Why OX?</h2>
+</div>
+
+<div class="cards-container">
+
+  <div class="feature-card">
+    <h3>Quick Matches</h3>
+    <p>Games are short and perfect for a quick break.</p>
+  </div>
+
+  <div class="feature-card">
+    <h3>Pure Strategy</h3>
+    <p>No luck. No randomness. Just tactical skills.</p>
+  </div>
+
+  <div class="feature-card">
+    <h3>No Download</h3>
+    <p>Runs entirely in your browser instantly.</p>
+  </div>
+
+  <div class="feature-card">
+    <h3>Live Leaderboards</h3>
+    <p>Compete with players worldwide.</p>
+  </div>
+
+</div>
+
+<div class="section-title-box">
+  <h2>What Players Say</h2>
+</div>
+
+<div class="testimonial-card">
+  <div class="quote-icon">“</div>
+  <p>I've been hooked since my first match.</p>
+  <div class="author">— Ravi K.</div>
+</div>
+
+<div class="testimonial-card">
+  <div class="quote-icon">“</div>
+  <p>Finally a strategy game with live player vibes.</p>
+  <div class="author">— Priya M.</div>
+</div>
+
+</div>
+
+<section class="arena-section" id="arenaSection">
+
+<div class="arena-box">
+
+<div id="formContainer">
+  <h2>Enter The Arena</h2>
+  <p>You'll be matched with a live opponent.</p>
+
+  <div class="input-group">
+    <label>Your Name</label>
+    <input type="text" id="playerNameInput" maxlength="20" placeholder="Enter your name...">
+  </div>
+
+  <button class="btn-primary" onclick="saveNameAndMatch()">⚔️ Find Match</button>
+
+  <a href="#" class="back-link" onclick="showHome();return false">← Back to home</a>
+</div>
+
+<div id="aiDifficultyContainer" style="display:none">
+
+  <h2>Player vs AI</h2>
+  <p>Select your challenge level.</p>
+
+  <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:20px">
+
+    <button class="btn-primary" onclick="startAIMatch('easy')" style="background:#1f2937;color:#22c55e;border:1px solid #22c55e">
+      Easy Mode
+    </button>
+
+    <button class="btn-primary" onclick="startAIMatch('medium')" style="background:#1f2937;color:#f59e0b;border:1px solid #f59e0b">
+      Medium Mode
+    </button>
+
+    <button class="btn-primary" onclick="startAIMatch('hard')" style="background:#1f2937;color:#ef4444;border:1px solid #ef4444">
+      Hard Mode
+    </button>
+
+  </div>
+
+  <a href="#" class="back-link" onclick="showHome();return false">← Back to home</a>
+
+</div>
+
+<div class="searching-loader" id="searchingLoader">
+  <div class="spinner"></div>
+  <h3 style="color:#f59e0b;font-size:1.2rem">Searching for live player...</h3>
+  <p id="matchmakingStatusText" style="color:#9ca3af;font-size:.9rem">Connecting to global game server...</p>
+</div>
+
+</div>
+</section>
+
+<section class="game-section" id="gameSection">
+
+<div class="cyber-board-wrapper">
+
+  <div class="corner-marker marker-tl"></div>
+  <div class="corner-marker marker-tr"></div>
+  <div class="corner-marker marker-bl"></div>
+  <div class="corner-marker marker-br"></div>
+
+  <div class="game-status" id="status">Live Match Active</div>
+
   <div class="board" id="board">
     <div class="cell" data-index="0"></div>
     <div class="cell" data-index="1"></div>
@@ -105,50 +322,1385 @@
     <div class="cell" data-index="8"></div>
   </div>
 
-  <button id="reset">Restart Game</button>
+  <div class="game-controls">
+    <button class="btn-secondary" onclick="handleNewMatchFromControls()">New Match</button>
+    <button class="btn-secondary" onclick="showHome()">Exit Arena</button>
+  </div>
 
-  <script>
-    const cells = document.querySelectorAll('.cell');
-    const statusText = document.getElementById('statusText');
-    const resetButton = document.getElementById('reset');
-    
-    let board = ['', '', '', '', '', '', '', '', ''];
-    let isGameActive = true;
-    let currentPlayer = 'X';
+  <button class="change-name-btn" onclick="promptChangeName()">Change Player Name</button>
 
-    function renderBoard() {
-      cells.forEach((c, i) => {
-        const val = board[i] || '';
-        c.setAttribute('data-content', val);
-        c.classList.toggle('x', val === 'X');
-      });
+  <div class="game-over-modal" id="gameOverModal">
+
+    <div class="modal-title" id="modalTitle">Match Over</div>
+
+    <div class="modal-subtitle" id="modalSubtitle">
+      Preparing next battle...
+    </div>
+
+    <div class="modal-btn-group">
+
+      <button class="btn-primary" onclick="handleNewMatchFromModal()">
+        New Match
+      </button>
+
+      <button class="btn-secondary" onclick="requestRematch()" id="rematchBtnModal">
+        Rematch
+      </button>
+
+      <button class="btn-secondary" onclick="showHome()" style="width:100%">
+        Exit Arena
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+</section>
+
+<script>
+
+let audioCtx=null,isSoundEnabled=localStorage.getItem('ox_sound_on')!=='false';
+
+function initAudio(){
+  try{
+    if(!audioCtx)
+      audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+
+    if(audioCtx.state==='suspended')
+      audioCtx.resume();
+  }catch(e){}
+}
+
+function updateSoundButtonUI(){
+  const b=document.getElementById('soundToggleBtn');
+  if(b)b.textContent=isSoundEnabled?'🔊':'🔇';
+}
+
+function toggleSound(){
+  isSoundEnabled=!isSoundEnabled;
+  localStorage.setItem('ox_sound_on',isSoundEnabled);
+  updateSoundButtonUI();
+
+  if(isSoundEnabled)
+    playClickSound();
+}
+
+function playSound(f,t,d,g=.1){
+  if(!isSoundEnabled)return;
+
+  try{
+    initAudio();
+
+    const o=audioCtx.createOscillator();
+    const a=audioCtx.createGain();
+
+    o.type=t;
+    o.frequency.value=f;
+
+    a.gain.setValueAtTime(g,audioCtx.currentTime);
+    a.gain.exponentialRampToValueAtTime(.0001,audioCtx.currentTime+d);
+
+    o.connect(a);
+    a.connect(audioCtx.destination);
+
+    o.start();
+    o.stop(audioCtx.currentTime+d);
+
+  }catch(e){}
+}
+
+function playClickSound(){
+  playSound(400,'sine',.08,.08);
+}
+
+function playWinSound(){
+  [523.25,659.25,783.99,1046.5].forEach((f,i)=>
+    setTimeout(()=>playSound(f,'triangle',.18,.12),i*100)
+  );
+}
+
+function playLoseSound(){
+  [350,300,240,180].forEach((f,i)=>
+    setTimeout(()=>playSound(f,'sawtooth',.18,.1),i*120)
+  );
+}
+
+updateSoundButtonUI();
+
+
+/* =========================================================
+   DEMO / ESTIMATED STATS
+   ========================================================= */
+
+const livePlayersCountElement=document.getElementById('livePlayersCount');
+const matchesPlayedCountElement=document.getElementById('matchesPlayedCount');
+
+let demoOnlinePlayers=12+Math.floor(Math.random()*10);
+let demoMatchesToday=140+Math.floor(Math.random()*35);
+
+function updateDemoStats(){
+
+  const playerChange=Math.floor(Math.random()*5)-2;
+
+  demoOnlinePlayers=Math.max(
+    5,
+    Math.min(40,demoOnlinePlayers+playerChange)
+  );
+
+  if(Math.random()<0.35){
+    demoMatchesToday+=1+Math.floor(Math.random()*3);
+  }
+
+  if(livePlayersCountElement)
+    livePlayersCountElement.textContent=demoOnlinePlayers;
+
+  if(matchesPlayedCountElement)
+    matchesPlayedCountElement.textContent=demoMatchesToday;
+}
+
+if(livePlayersCountElement)
+  livePlayersCountElement.textContent=demoOnlinePlayers;
+
+if(matchesPlayedCountElement)
+  matchesPlayedCountElement.textContent=demoMatchesToday;
+
+setInterval(
+  updateDemoStats,
+  20000+Math.random()*20000
+);
+
+
+/* =========================================================
+   GAME VARIABLES
+   ========================================================= */
+
+let myName=localStorage.getItem('ox_player_name')||'',
+    opponentName='Opponent',
+    mySymbol='O',
+    opponentSymbol='X';
+
+let isMyTurn=true,
+    currentDifficulty='medium',
+    isAIMode=false,
+    rematchRequestedByMe=false,
+    rematchRequestedByOpponent=false;
+
+let matchmakingActive=false,
+    reconnectTimer=null,
+    rematchToastTimer=null,
+    aiMoveTimer=null;
+
+let socket=null,
+    multiplayerMatchId=null,
+    multiplayerConnected=false;
+
+let board=['','','','','','','','',''],
+    isGameActive=true;
+
+const cells=document.querySelectorAll('.cell'),
+      statusElement=document.getElementById('status');
+
+const winningConditions=[
+  [0,1,2],
+  [3,4,5],
+  [6,7,8],
+  [0,3,6],
+  [1,4,7],
+  [2,5,8],
+  [0,4,8],
+  [2,4,6]
+];
+
+
+/* =========================================================
+   MENU / REMATCH
+   ========================================================= */
+
+function toggleMenu(){
+  playClickSound();
+  document.getElementById('mobileMenu').classList.toggle('active');
+}
+
+function closeMenuAndGoHome(){
+  toggleMenu();
+  showHome();
+}
+
+function clearAIMoveTimer(){
+  if(aiMoveTimer){
+    clearTimeout(aiMoveTimer);
+    aiMoveTimer=null;
+  }
+}
+
+function hideRematchToast(){
+
+  const t=document.getElementById('rematchToast');
+
+  if(t)
+    t.classList.remove('show');
+
+  if(rematchToastTimer){
+    clearTimeout(rematchToastTimer);
+    rematchToastTimer=null;
+  }
+}
+
+function showRematchNotification(){
+
+  const t=document.getElementById('rematchToast');
+  const x=document.getElementById('rematchToastText');
+
+  if(x)
+    x.textContent=opponentName+' wants another round!';
+
+  t.classList.add('show');
+
+  playClickSound();
+
+  clearTimeout(rematchToastTimer);
+
+  rematchToastTimer=setTimeout(
+    hideRematchToast,
+    5000
+  );
+}
+
+function setRematchButtonState(text,disabled){
+
+  const b=document.getElementById('rematchBtnModal');
+
+  if(b){
+    b.textContent=text;
+    b.disabled=disabled;
+  }
+}
+
+
+/* =========================================================
+   HOME
+   ========================================================= */
+
+function showHome(){
+
+  playClickSound();
+  clearAIMoveTimer();
+
+  matchmakingActive=false;
+  rematchRequestedByMe=false;
+  rematchRequestedByOpponent=false;
+
+  hideRematchToast();
+
+  if(socket && socket.readyState===WebSocket.OPEN){
+
+    if(multiplayerMatchId){
+      socket.send(JSON.stringify({
+        type:'leaveMatch',
+        matchId:multiplayerMatchId
+      }));
     }
 
-    cells.forEach(cell => {
-      cell.addEventListener('click', () => {
-        const index = cell.getAttribute('data-index');
-        if (board[index] !== '' || !isGameActive) return;
+    socket.send(JSON.stringify({
+      type:'leaveQueue'
+    }));
+  }
 
-        board[index] = currentPlayer;
-        renderBoard();
+  multiplayerMatchId=null;
+  isGameActive=false;
 
-        // Simple check or turn swap logic can go here
-        currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
-        statusText.textContent = `Player ${currentPlayer} ki baari hai`;
-      });
-    });
+  document.getElementById('gameOverModal').classList.remove('active');
 
-    resetButton.addEventListener('click', () => {
-      board = ['', '', '', '', '', '', '', '', ''];
-      isGameActive = true;
-      currentPlayer = 'X';
-      statusText.textContent = 'Aapki baari hai!';
+  document.getElementById('main-website-content').style.display='block';
+  document.getElementById('arenaSection').classList.remove('active');
+  document.getElementById('gameSection').classList.remove('active');
+
+  window.scrollTo(0,0);
+}
+
+
+/* =========================================================
+   ENTER ARENA
+   ========================================================= */
+
+function handleEnterArena(){
+
+  playClickSound();
+
+  isAIMode=false;
+
+  document.getElementById('main-website-content').style.display='none';
+  document.getElementById('arenaSection').classList.add('active');
+  document.getElementById('gameSection').classList.remove('active');
+
+  document.getElementById('formContainer').style.display=myName?'none':'block';
+  document.getElementById('aiDifficultyContainer').style.display='none';
+  document.getElementById('searchingLoader').style.display=myName?'flex':'none';
+
+  if(myName)
+    startMatchmaking();
+
+  window.scrollTo(0,0);
+}
+
+function handlePlayerVsAI(){
+
+  playClickSound();
+
+  isAIMode=true;
+
+  if(!myName){
+    myName='Player';
+    localStorage.setItem('ox_player_name',myName);
+  }
+
+  document.getElementById('main-website-content').style.display='none';
+  document.getElementById('arenaSection').classList.add('active');
+  document.getElementById('gameSection').classList.remove('active');
+
+  document.getElementById('formContainer').style.display='none';
+  document.getElementById('aiDifficultyContainer').style.display='block';
+  document.getElementById('searchingLoader').style.display='none';
+
+  window.scrollTo(0,0);
+}
+
+
+/* =========================================================
+   AI
+   ========================================================= */
+
+function startAIMatch(d){
+
+  playClickSound();
+  clearAIMoveTimer();
+
+  currentDifficulty=d;
+  opponentName='Computer ('+d.toUpperCase()+')';
+
+  isAIMode=true;
+  multiplayerMatchId=null;
+
+  mySymbol='O';
+  opponentSymbol='X';
+
+  isMyTurn=Math.random()<.5;
+
+  document.getElementById('arenaSection').classList.remove('active');
+  document.getElementById('gameSection').classList.add('active');
+
+  resetGame();
+
+  if(!isMyTurn){
+
+    statusElement.textContent=
+      opponentName+' ('+opponentSymbol+') is thinking...';
+
+    aiMoveTimer=setTimeout(
+      makeAIMoveBasedOnDifficulty,
+      850
+    );
+  }
+}
+
+function handleNewMatchFromControls(){
+
+  playClickSound();
+  clearAIMoveTimer();
+
+  if(isAIMode)
+    startAIMatch(currentDifficulty);
+  else
+    startMatchmaking();
+}
+
+function handleNewMatchFromModal(){
+
+  document.getElementById('gameOverModal').classList.remove('active');
+
+  handleNewMatchFromControls();
+}
+
+
+/* =========================================================
+   PLAYER NAME
+   ========================================================= */
+
+function saveNameAndMatch(){
+
+  playClickSound();
+
+  const v=document.getElementById('playerNameInput')
+    .value.trim()
+    .slice(0,20);
+
+  if(!v){
+    alert('Please enter your player name first!');
+    return;
+  }
+
+  myName=v;
+
+  localStorage.setItem(
+    'ox_player_name',
+    myName
+  );
+
+  startMatchmaking();
+}
+
+function promptChangeName(){
+
+  playClickSound();
+
+  const v=prompt(
+    'Enter your new player name:',
+    myName
+  );
+
+  if(v && v.trim()){
+
+    myName=v.trim().slice(0,20);
+
+    localStorage.setItem(
+      'ox_player_name',
+      myName
+    );
+
+    if(isGameActive){
+
+      statusElement.textContent=
+        isMyTurn
+        ? `${myName} (${mySymbol})'s turn`
+        : `${opponentName} (${opponentSymbol}) is thinking...`;
+    }
+  }
+}
+
+
+/* =========================================================
+   MULTIPLAYER CONNECTION
+   ========================================================= */
+
+function connectMultiplayer(){
+
+  if(
+    socket &&
+    (
+      socket.readyState===WebSocket.OPEN ||
+      socket.readyState===WebSocket.CONNECTING
+    )
+  )
+    return;
+
+  const p=
+    location.protocol==='https:'
+    ? 'wss:'
+    : 'ws:';
+
+  socket=new WebSocket(
+    p+'//'+location.host
+  );
+
+  socket.onopen=()=>{
+
+    multiplayerConnected=true;
+
+    if(matchmakingActive && myName){
+
+      socket.send(JSON.stringify({
+        type:'joinQueue',
+        name:myName
+      }));
+
+      document.getElementById(
+        'matchmakingStatusText'
+      ).textContent='Waiting for a real player...';
+    }
+  };
+
+  socket.onclose=()=>{
+
+    multiplayerConnected=false;
+
+    if(matchmakingActive && !multiplayerMatchId){
+
+      clearTimeout(reconnectTimer);
+
+      document.getElementById(
+        'matchmakingStatusText'
+      ).textContent=
+        'Reconnecting to multiplayer server...';
+
+      reconnectTimer=setTimeout(
+        connectMultiplayer,
+        800
+      );
+    }
+  };
+
+  socket.onerror=()=>{
+    multiplayerConnected=false;
+  };
+
+  socket.onmessage=e=>{
+
+    let m;
+
+    try{
+      m=JSON.parse(e.data);
+    }catch(_){
+      return;
+    }
+
+    if(m.type==='waiting'){
+
+      document.getElementById(
+        'matchmakingStatusText'
+      ).textContent=
+        'Waiting for a real player...';
+
+      return;
+    }
+
+    if(m.type==='matchFound'){
+
+      matchmakingActive=false;
+
+      rematchRequestedByMe=false;
+      rematchRequestedByOpponent=false;
+
+      multiplayerMatchId=m.matchId;
+
+      opponentName=m.opponentName||'Opponent';
+
+      mySymbol=m.symbol;
+
+      opponentSymbol=
+        mySymbol==='X'
+        ? 'O'
+        : 'X';
+
+      isMyTurn=!!m.yourTurn;
+
+      document.getElementById(
+        'arenaSection'
+      ).classList.remove('active');
+
+      document.getElementById(
+        'gameSection'
+      ).classList.add('active');
+
+      resetGame();
+
+      return;
+    }
+
+    if(m.type==='move'){
+
+      if(Array.isArray(m.board))
+        board=m.board;
+
+      isMyTurn=m.nextTurn===mySymbol;
+
       renderBoard();
-    });
 
-    // Initial render call
+      if(!m.gameOver){
+
+        statusElement.textContent=
+          isMyTurn
+          ? `${myName} (${mySymbol})'s turn`
+          : `${opponentName} (${opponentSymbol}) is thinking...`;
+      }
+
+      return;
+    }
+
+    if(m.type==='gameOver'){
+
+      if(Array.isArray(m.board))
+        board=m.board;
+
+      renderBoard();
+
+      isGameActive=false;
+
+      showGameResult(m.result);
+
+      return;
+    }
+
+    if(m.type==='rematchRequested'){
+
+      isGameActive=false;
+
+      rematchRequestedByMe=false;
+      rematchRequestedByOpponent=true;
+
+      showRematchNotification();
+
+      setRematchButtonState(
+        'Accept Rematch',
+        false
+      );
+
+      document.getElementById(
+        'modalTitle'
+      ).textContent='Rematch? 🔁';
+
+      document.getElementById(
+        'modalSubtitle'
+      ).textContent=
+        opponentName+' wants another round.';
+
+      document.getElementById(
+        'gameOverModal'
+      ).classList.add('active');
+
+      return;
+    }
+
+    if(m.type==='rematchStart'){
+
+      hideRematchToast();
+
+      rematchRequestedByMe=false;
+      rematchRequestedByOpponent=false;
+
+      multiplayerMatchId=
+        m.matchId||multiplayerMatchId;
+
+      mySymbol=m.symbol;
+
+      opponentSymbol=
+        mySymbol==='X'
+        ? 'O'
+        : 'X';
+
+      isMyTurn=!!m.yourTurn;
+
+      document.getElementById(
+        'gameOverModal'
+      ).classList.remove('active');
+
+      setRematchButtonState(
+        'Rematch',
+        false
+      );
+
+      resetGame();
+
+      return;
+    }
+
+    if(m.type==='rematchDeclined'){
+
+      rematchRequestedByMe=false;
+
+      setRematchButtonState(
+        'Rematch',
+        false
+      );
+
+      document.getElementById(
+        'modalTitle'
+      ).textContent='Rematch Declined';
+
+      document.getElementById(
+        'modalSubtitle'
+      ).textContent=
+        'Your opponent declined the rematch.';
+
+      return;
+    }
+
+    if(m.type==='opponentLeft'){
+
+      isGameActive=false;
+
+      rematchRequestedByMe=false;
+      rematchRequestedByOpponent=false;
+
+      statusElement.textContent=
+        'Opponent left the match.';
+
+      document.getElementById(
+        'modalTitle'
+      ).textContent='Opponent Left';
+
+      document.getElementById(
+        'modalSubtitle'
+      ).textContent=
+        'Find another real player to play.';
+
+      setRematchButtonState(
+        'New Match',
+        false
+      );
+
+      document.getElementById(
+        'gameOverModal'
+      ).classList.add('active');
+
+      return;
+    }
+
+    if(m.type==='error'){
+
+      if(
+        m.message &&
+        m.message.toLowerCase().includes('rematch')
+      ){
+        rematchRequestedByMe=false;
+
+        setRematchButtonState(
+          'Rematch',
+          false
+        );
+      }
+
+      statusElement.textContent=
+        m.message||
+        'Something went wrong.';
+    }
+  };
+}
+
+
+/* =========================================================
+   MATCHMAKING
+   ========================================================= */
+
+function startMatchmaking(){
+
+  playClickSound();
+  clearAIMoveTimer();
+
+  isAIMode=false;
+
+  rematchRequestedByMe=false;
+  rematchRequestedByOpponent=false;
+
+  if(
+    socket &&
+    socket.readyState===WebSocket.OPEN
+  ){
+
+    if(multiplayerMatchId){
+
+      socket.send(JSON.stringify({
+        type:'leaveMatch',
+        matchId:multiplayerMatchId
+      }));
+    }
+
+    socket.send(JSON.stringify({
+      type:'leaveQueue'
+    }));
+  }
+
+  multiplayerMatchId=null;
+  matchmakingActive=true;
+
+  hideRematchToast();
+
+  setRematchButtonState(
+    'Rematch',
+    false
+  );
+
+  document.getElementById(
+    'gameOverModal'
+  ).classList.remove('active');
+
+  document.getElementById(
+    'main-website-content'
+  ).style.display='none';
+
+  document.getElementById(
+    'arenaSection'
+  ).classList.add('active');
+
+  document.getElementById(
+    'gameSection'
+  ).classList.remove('active');
+
+  document.getElementById(
+    'formContainer'
+  ).style.display='none';
+
+  document.getElementById(
+    'aiDifficultyContainer'
+  ).style.display='none';
+
+  document.getElementById(
+    'searchingLoader'
+  ).style.display='flex';
+
+  document.getElementById(
+    'matchmakingStatusText'
+  ).textContent=
+    'Connecting to multiplayer server...';
+
+  if(
+    !socket ||
+    socket.readyState!==WebSocket.OPEN
+  )
+    connectMultiplayer();
+  else{
+
+    socket.send(JSON.stringify({
+      type:'joinQueue',
+      name:myName
+    }));
+
+    document.getElementById(
+      'matchmakingStatusText'
+    ).textContent=
+      'Waiting for a real player...';
+  }
+}
+
+
+/* =========================================================
+   REMATCH
+   ========================================================= */
+
+function requestRematch(){
+
+  playClickSound();
+
+  if(isAIMode){
+
+    startAIMatch(
+      currentDifficulty
+    );
+
+    return;
+  }
+
+  if(
+    !multiplayerMatchId ||
+    !socket ||
+    socket.readyState!==WebSocket.OPEN
+  ){
+
+    startMatchmaking();
+
+    return;
+  }
+
+  if(rematchRequestedByOpponent){
+
+    rematchRequestedByOpponent=false;
+    rematchRequestedByMe=false;
+
+    setRematchButtonState(
+      'Starting...',
+      true
+    );
+
+    document.getElementById(
+      'modalTitle'
+    ).textContent=
+      'Rematch Accepted 🔁';
+
+    document.getElementById(
+      'modalSubtitle'
+    ).textContent=
+      'Starting another round...';
+
+    socket.send(JSON.stringify({
+      type:'rematchAccept',
+      matchId:multiplayerMatchId
+    }));
+
+    return;
+  }
+
+  if(rematchRequestedByMe)
+    return;
+
+  rematchRequestedByMe=true;
+
+  setRematchButtonState(
+    'Requested ✓',
+    true
+  );
+
+  document.getElementById(
+    'modalTitle'
+  ).textContent=
+    'Rematch Requested';
+
+  document.getElementById(
+    'modalSubtitle'
+  ).textContent=
+    'Waiting for your opponent to accept...';
+
+  socket.send(JSON.stringify({
+    type:'rematchRequest',
+    matchId:multiplayerMatchId
+  }));
+}
+
+
+/* =========================================================
+   BOARD CLICK
+   ========================================================= */
+
+cells.forEach(c=>
+  c.addEventListener('click',()=>{
+
+    const i=Number(c.dataset.index);
+
+    if(!isGameActive || board[i])
+      return;
+
+    if(isAIMode){
+
+      if(!isMyTurn)
+        return;
+
+      playClickSound();
+
+      board[i]=mySymbol;
+
+      renderBoard();
+
+      if(checkGameStatus())
+        return;
+
+      isMyTurn=false;
+
+      statusElement.textContent=
+        opponentName+
+        ' ('+
+        opponentSymbol+
+        ') is thinking...';
+
+      clearAIMoveTimer();
+
+      aiMoveTimer=setTimeout(
+        makeAIMoveBasedOnDifficulty,
+        850
+      );
+
+    }else{
+
+      if(
+        !isMyTurn ||
+        !multiplayerMatchId ||
+        !socket ||
+        socket.readyState!==WebSocket.OPEN
+      )
+        return;
+
+      playClickSound();
+
+      socket.send(JSON.stringify({
+        type:'move',
+        matchId:multiplayerMatchId,
+        index:i
+      }));
+    }
+  })
+);
+
+
+/* =========================================================
+   BOARD
+   ========================================================= */
+
+function renderBoard(){
+
+  cells.forEach((c,i)=>{
+    const val = board[i] || '';
+    c.setAttribute('data-content', val);
+    c.classList.toggle('x', val === 'X');
+  });
+}
+
+function checkWinner(b){
+
+  for(
+    const [a,c,d]
+    of winningConditions
+  ){
+
+    if(
+      b[a] &&
+      b[a]===b[c] &&
+      b[a]===b[d]
+    )
+      return b[a];
+  }
+
+  return b.includes('')
+    ? null
+    : 'tie';
+}
+
+function checkGameStatus(){
+
+  const r=checkWinner(board);
+
+  if(!r)
+    return false;
+
+  isGameActive=false;
+
+  showGameResult(r);
+
+  return true;
+}
+
+
+/* =========================================================
+   GAME RESULT
+   ========================================================= */
+
+function showGameResult(r){
+
+  if(r===mySymbol){
+
+    playWinSound();
+
+    statusElement.textContent=
+      `${myName||'Player'} (${mySymbol}) Wins! 🎉`;
+
+    document.getElementById(
+      'modalTitle'
+    ).textContent=
+      `${myName||'Player'} Wins! 🎉`;
+
+    document.getElementById(
+      'modalSubtitle'
+    ).textContent=
+      'Great strategy! Ready for the next match?';
+
+  }else if(r===opponentSymbol){
+
+    playLoseSound();
+
+    statusElement.textContent=
+      `${opponentName} (${opponentSymbol}) Wins!`;
+
+    document.getElementById(
+      'modalTitle'
+    ).textContent=
+      `${opponentName} Wins!`;
+
+    document.getElementById(
+      'modalSubtitle'
+    ).textContent=
+      'Better luck next round!';
+
+  }else{
+
+    playClickSound();
+
+    statusElement.textContent=
+      'Match Draw! 🤝';
+
+    document.getElementById(
+      'modalTitle'
+    ).textContent=
+      'Match Draw! 🤝';
+
+    document.getElementById(
+      'modalSubtitle'
+    ).textContent=
+      'Neck and neck! Play another round?';
+  }
+
+  rematchRequestedByMe=false;
+  rematchRequestedByOpponent=false;
+
+  setRematchButtonState(
+    'Rematch',
+    false
+  );
+
+  setTimeout(()=>
+    document.getElementById(
+      'gameOverModal'
+    ).classList.add('active'),
+    500
+  );
+}
+
+
+/* =========================================================
+   AI LOGIC
+   ========================================================= */
+
+function getRandomMove(){
+
+  const e=board
+    .map((v,i)=>v===''?i:-1)
+    .filter(i=>i>=0);
+
+  return e.length
+    ? e[Math.floor(Math.random()*e.length)]
+    : undefined;
+}
+
+function getMediumMove(){
+
+  for(let i=0;i<9;i++){
+
+    if(!board[i]){
+
+      board[i]=opponentSymbol;
+
+      if(
+        checkWinner(board)===
+        opponentSymbol
+      ){
+
+        board[i]='';
+
+        return i;
+      }
+
+      board[i]='';
+    }
+  }
+
+  for(let i=0;i<9;i++){
+
+    if(!board[i]){
+
+      board[i]=mySymbol;
+
+      if(
+        checkWinner(board)===
+        mySymbol
+      ){
+
+        board[i]='';
+
+        return i;
+      }
+
+      board[i]='';
+    }
+  }
+
+  return getRandomMove();
+}
+
+function minimax(b,depth,maximizing){
+
+  const r=checkWinner(b);
+
+  if(r===opponentSymbol)
+    return 10-depth;
+
+  if(r===mySymbol)
+    return depth-10;
+
+  if(r==='tie')
+    return 0;
+
+  if(maximizing){
+
+    let s=-Infinity;
+
+    for(let i=0;i<9;i++){
+
+      if(!b[i]){
+
+        b[i]=opponentSymbol;
+
+        s=Math.max(
+          s,
+          minimax(
+            b,
+            depth+1,
+            false
+          )
+        );
+
+        b[i]='';
+      }
+    }
+
+    return s;
+
+  }else{
+
+    let s=Infinity;
+
+    for(let i=0;i<9;i++){
+
+      if(!b[i]){
+
+        b[i]=mySymbol;
+
+        s=Math.min(
+          s,
+          minimax(
+            b,
+            depth+1,
+            true
+          )
+        );
+
+        b[i]='';
+      }
+    }
+
+    return s;
+  }
+}
+
+function getHardMove(){
+
+  let best=-Infinity,
+      move;
+
+  for(let i=0;i<9;i++){
+
+    if(!board[i]){
+
+      board[i]=opponentSymbol;
+
+      const s=minimax(
+        board,
+        0,
+        false
+      );
+
+      board[i]='';
+
+      if(s>best){
+
+        best=s;
+        move=i;
+      }
+    }
+  }
+
+  return move;
+}
+
+function makeAIMoveBasedOnDifficulty(){
+
+  aiMoveTimer=null;
+
+  if(!isGameActive || isMyTurn)
+    return;
+
+  let m=
+    currentDifficulty==='easy'
+    ? getRandomMove()
+    : currentDifficulty==='medium'
+      ? getMediumMove()
+      : getHardMove();
+
+  if(m!==undefined){
+
+    playClickSound();
+
+    board[m]=opponentSymbol;
+
     renderBoard();
-  </script>
+  }
+
+  if(checkGameStatus())
+    return;
+
+  isMyTurn=true;
+
+  statusElement.textContent=
+    `${myName||'Player'} (${mySymbol})'s turn`;
+}
+
+
+/* =========================================================
+   RESET
+   ========================================================= */
+
+function resetGame(){
+
+  clearAIMoveTimer();
+
+  document.getElementById(
+    'gameOverModal'
+  ).classList.remove('active');
+
+  board=[
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    ''
+  ];
+
+  isGameActive=true;
+
+  rematchRequestedByMe=false;
+  rematchRequestedByOpponent=false;
+
+  setRematchButtonState(
+    'Rematch',
+    false
+  );
+
+  renderBoard();
+
+  statusElement.textContent=
+    isMyTurn
+    ? `${myName||'Player'} (${mySymbol})'s turn`
+    : `${opponentName} (${opponentSymbol}) is thinking...`;
+}
+
+
+/* =========================================================
+   PAGE CLOSE
+   ========================================================= */
+
+window.addEventListener(
+  'beforeunload',
+  ()=>{
+    if(
+      socket &&
+      socket.readyState===WebSocket.OPEN &&
+      multiplayerMatchId
+    ){
+
+      socket.send(JSON.stringify({
+        type:'leaveMatch',
+        matchId:multiplayerMatchId
+      }));
+    }
+  }
+);
+
+
+/* =========================================================
+   ENTER KEY
+   ========================================================= */
+
+document.getElementById(
+  'playerNameInput'
+).addEventListener(
+  'keydown',
+  e=>{
+    if(e.key==='Enter')
+      saveNameAndMatch();
+  }
+);
+
+</script>
+
 </body>
     </html>
-    
+      
