@@ -1,13 +1,15 @@
 {
-  "name": "ox-multiplayer",
-  "version": "2.0.0",
-  "private": true,
-  "description": "OX multiplayer tic-tac-toe with AI and WebSocket matchmaking",
-  "main": "server.js",
+  "name": "ox-multiplayer-game",
+  "version": "1.0.0",
+  "description": "Multiplayer and AI Strategy Game with Carrom Style Chat",
+  "main": "server_2.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server_2.js"
   },
   "dependencies": {
-    "ws": "^8.18.3"
+    "ws": "^8.16.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
   }
 }
