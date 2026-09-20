@@ -944,7 +944,6 @@ function connectMultiplayer(){
       socket.send(JSON.stringify({type:'joinQueue',name:myName}));
       document.getElementById('matchmakingStatusText').textContent='Waiting for real player...';
     }
-    // Keep alive ping interval
     if(pingInterval) clearInterval(pingInterval);
     pingInterval = setInterval(()=>{
       if(socket && socket.readyState===WebSocket.OPEN){
@@ -1148,7 +1147,7 @@ function requestRematch(){
 
 
 /* =========================================================
-   BOARD CLICK (OPTIMISTIC UI UPDATE FOR INSTANT SPEED)
+   BOARD CLICK
    ========================================================= */
 
 cells.forEach(c=>
@@ -1170,7 +1169,6 @@ cells.forEach(c=>
       if(!isMyTurn || !multiplayerMatchId || !socket || socket.readyState!==WebSocket.OPEN)return;
       playClickSound();
 
-      // Optimistic instant UI update
       board[i]=mySymbol;
       renderBoard();
       isMyTurn=false;
@@ -1358,5 +1356,5 @@ document.getElementById('oxChatInput').addEventListener('keydown',e=>{if(e.key==
 </script>
 
 </body>
-      </html>
-               
+  </html>
+    
