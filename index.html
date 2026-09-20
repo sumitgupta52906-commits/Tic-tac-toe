@@ -32,7 +32,7 @@ nav{display:flex;justify-content:space-between;align-items:center;padding:20px 2
 .mobile-menu-links{display:flex;flex-direction:column;gap:24px}
 .mobile-menu-links a{color:#f3f4f6;text-decoration:none;font-size:1.5rem;font-weight:600}
 
-.hero{padding:40px 24px 20px;max-width:800px}
+.hero{padding:40px 24px 20px;max-width:800px;margin:0 auto}
 .subtitle-tag{color:#f59e0b;font-size:.85rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:16px;display:flex;align-items:center;gap:8px}
 .subtitle-tag:before{content:'';display:inline-block;width:8px;height:8px;background:#f59e0b;border-radius:2px}
 h1{font-size:3rem;line-height:1.1;font-weight:900;text-transform:uppercase;margin-bottom:20px}
@@ -75,16 +75,33 @@ h1 span{color:#f59e0b}
 .btn-secondary{flex:1;background:#1f2937;color:#f3f4f6;border:1px solid #374151;padding:12px;font-weight:700;border-radius:4px;cursor:pointer;text-transform:uppercase;font-size:.85rem;outline:none}
 .change-name-btn{background:none;border:none;color:#9ca3af;font-size:.8rem;text-decoration:underline;cursor:pointer;display:block;margin:0 auto;outline:none}
 
-/* BOTTOM AREA CONTAINER FOR CHAT LAUNCHER & BUTTONS */
-.game-bottom-action-bar {
-  display: flex;
+/* DEFAULT: CHAT HIDDEN FOR AI & DESKTOP */
+.game-bottom-action-bar, .ox-chat-panel, .ox-floating-toast-container {
+  display: none !important;
+}
+
+/* SHOW ONLY ON MULTIPLAYER MOBILE VIEW */
+body.multiplayer-mode .game-bottom-action-bar {
+  display: flex !important;
   align-items: center;
   justify-content: space-between;
   margin-top: 15px;
   position: relative;
 }
+body.multiplayer-mode .ox-floating-toast-container {
+  display: flex !important;
+  position: absolute;
+  top: 15px;
+  left: 0;
+  right: 0;
+  flex-direction: column;
+  gap: 6px;
+  z-index: 120;
+  pointer-events: none;
+  padding: 0 15px;
+}
 
-/* CARROM STYLE CHAT SYSTEM STYLES (MOVED TO BOTTOM EMPTY SPACE) */
+/* CHAT LAUNCHER & PANEL STYLING */
 .ox-chat-launcher {
   display: flex;
   width: 44px;
@@ -101,7 +118,6 @@ h1 span{color:#f59e0b}
   outline: none;
 }
 .ox-chat-panel {
-  display: none;
   position: absolute;
   left: 0;
   bottom: 55px;
@@ -117,7 +133,7 @@ h1 span{color:#f59e0b}
   overflow: hidden;
 }
 .ox-chat-panel.active {
-  display: flex;
+  display: flex !important;
 }
 .ox-chat-header-bar {
   display: flex;
@@ -229,32 +245,30 @@ h1 span{color:#f59e0b}
   font-size: 0.85rem;
 }
 
-/* FLOATING CHAT BUBBLES ON TOP OF GAME BOARD */
-.ox-floating-toast-container {
-  position: absolute;
-  top: 15px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  z-index: 120;
-  pointer-events: none;
-  width: 90%;
-  align-items: center;
-}
+/* FLOATING CHAT BUBBLES */
 .ox-float-bubble {
-  background: rgba(17, 24, 39, 0.92);
-  border: 1px solid #f59e0b;
-  color: #f3f4f6;
   padding: 6px 14px;
-  border-radius: 20px;
+  border-radius: 16px;
   font-size: 0.9rem;
   box-shadow: 0 4px 15px rgba(0,0,0,0.5);
   animation: fadeInOut 4s forwards;
-  max-width: 100%;
-  text-align: center;
+  max-width: 75%;
   word-break: break-word;
+}
+.ox-float-bubble.my-msg {
+  background: #f59e0b;
+  color: #0b0f19;
+  align-self: flex-end;
+  border-bottom-right-radius: 2px;
+  text-align: right;
+}
+.ox-float-bubble.opp-msg {
+  background: rgba(17, 24, 39, 0.95);
+  border: 1px solid #f59e0b;
+  color: #f3f4f6;
+  align-self: flex-start;
+  border-bottom-left-radius: 2px;
+  text-align: left;
 }
 @keyframes fadeInOut {
   0% { opacity: 0; transform: translateY(-10px); }
@@ -274,19 +288,19 @@ h1 span{color:#f59e0b}
 .modal-subtitle{color:#9ca3af;font-size:.95rem;margin-bottom:24px}
 .modal-btn-group{display:flex;flex-direction:column;gap:12px;width:100%;max-width:260px}
 
-.stats-section{padding:50px 24px;text-align:center;display:flex;flex-direction:column;gap:40px}
+.stats-section{padding:50px 24px;text-align:center;display:flex;flex-direction:column;gap:40px;max-width:800px;margin:0 auto}
 .stat-box h2{font-size:3.2rem;font-weight:900;color:#f59e0b;margin-bottom:6px}
 .stat-box p{color:#9ca3af;font-size:.95rem;font-weight:600;letter-spacing:1px;text-transform:uppercase}
 .stat-demo-note{display:block;color:#6b7280;font-size:.68rem;font-weight:600;letter-spacing:.8px;text-transform:uppercase;margin-top:4px}
 
-.section-title-box{padding:40px 24px 20px}
+.section-title-box{padding:40px 24px 20px;max-width:800px;margin:0 auto}
 .section-title-box h2{font-size:2.2rem;font-weight:900;text-transform:uppercase}
-.cards-container{padding:0 24px 30px;display:flex;flex-direction:column;gap:20px}
+.cards-container{padding:0 24px 30px;display:flex;flex-direction:column;gap:20px;max-width:800px;margin:0 auto}
 .feature-card{background:#111827;border:1px solid #1f2937;border-radius:12px;padding:28px 24px}
 .feature-card .step-num{font-size:2.5rem;font-weight:900;color:#f59e0b;margin-bottom:12px}
 .feature-card h3{font-size:1.4rem;font-weight:800;margin-bottom:10px;color:#f3f4f6}
 .feature-card p{color:#9ca3af;font-size:.95rem;line-height:1.5}
-.testimonial-card{background:#111827;border:1px solid #1f2937;border-radius:12px;padding:28px 24px;margin:0 24px 20px}
+.testimonial-card{background:#111827;border:1px solid #1f2937;border-radius:12px;padding:28px 24px;margin:0 auto 20px;max-width:800px}
 .testimonial-card .quote-icon{color:#f59e0b;font-size:1.5rem;margin-bottom:10px}
 .testimonial-card p{font-size:1.1rem;font-weight:500;line-height:1.5;margin-bottom:16px;color:#f3f4f6}
 .testimonial-card .author{color:#f59e0b;font-size:.9rem;font-weight:800;letter-spacing:1px;text-transform:uppercase}
@@ -477,7 +491,7 @@ h1 span{color:#f59e0b}
   <div class="corner-marker marker-bl"></div>
   <div class="corner-marker marker-br"></div>
 
-  <!-- Floating Chat Bubbles Toast Container (Top of Game) -->
+  <!-- Floating Chat Bubbles Toast Container (Multiplayer Mobile Only) -->
   <div class="ox-floating-toast-container" id="oxFloatingToastContainer"></div>
 
   <div class="game-status" id="status">Live Match Active</div>
@@ -494,7 +508,7 @@ h1 span{color:#f59e0b}
     <div class="cell" data-index="8"></div>
   </div>
 
-  <!-- Bottom Empty Space Action Bar containing Chat Launcher & Controls -->
+  <!-- Bottom Action Bar containing Chat (Multiplayer Mobile Only) & New Match Button -->
   <div class="game-bottom-action-bar">
     <button class="ox-chat-launcher" onclick="toggleOXChat()" title="Chat">💬</button>
 
@@ -503,8 +517,8 @@ h1 span{color:#f59e0b}
     </div>
   </div>
 
-  <!-- Carrom Style Chat Panel (Placed neatly above bottom bar) -->
-  <div class="ox-chat-panel" id="oxChatPanel">
+  <!-- Chat Panel (Multiplayer Mobile Only) -->
+  <div class="ox-chat-panel" id="oxChatPanel" style="display:none;">
     <div class="ox-chat-header-bar">
       <div class="ox-chat-tabs">
         <button class="ox-chat-tab active" id="oxMessageTab" onclick="showOXChatTab('messages')">💬</button>
@@ -605,7 +619,7 @@ updateSoundButtonUI();
 
 
 /* =========================================================
-   CHAT SYSTEM FUNCTIONS (FLOATING TOASTS ON TOP)
+   CHAT SYSTEM FUNCTIONS
    ========================================================= */
 
 function toggleOXChat() {
@@ -634,17 +648,16 @@ function showOXChatTab(tab) {
   }
 }
 
-function showFloatingChatBubble(senderName, text) {
+function showFloatingChatBubble(senderName, text, isMine) {
   const container = document.getElementById('oxFloatingToastContainer');
   if (!container) return;
 
   const bubble = document.createElement('div');
-  bubble.className = 'ox-float-bubble';
-  bubble.textContent = `${senderName}: ${text}`;
+  bubble.className = 'ox-float-bubble ' + (isMine ? 'my-msg' : 'opp-msg');
+  bubble.textContent = isMine ? text : `${senderName}: ${text}`;
   
   container.appendChild(bubble);
 
-  // Auto remove after animation completes (4 seconds)
   setTimeout(() => {
     bubble.remove();
   }, 4000);
@@ -654,20 +667,12 @@ function sendOXChatText(text) {
   playClickSound();
   const currentName = myName || 'Player';
   
-  // Show immediately on own screen as a top floating bubble
-  showFloatingChatBubble(currentName, text);
+  showFloatingChatBubble(currentName, text, true);
 
-  // Close chat panel after sending
-  document.getElementById('oxChatPanel').classList.remove('active');
+  const panel = document.getElementById('oxChatPanel');
+  if(panel) panel.classList.remove('active');
 
-  if (isAIMode) {
-    setTimeout(() => {
-      const replies = ['Nice!', 'Thanks!', 'Good game!', 'Hmm...'];
-      const reply = replies[Math.floor(Math.random() * replies.length)];
-      showFloatingChatBubble(opponentName, reply);
-    }, 800);
-    return;
-  }
+  if (isAIMode) return;
 
   if (!socket || socket.readyState !== WebSocket.OPEN || !multiplayerMatchId) {
     return;
@@ -802,6 +807,7 @@ function showHome(){
   rematchRequestedByMe=false;
   rematchRequestedByOpponent=false;
   hideRematchToast();
+  document.body.classList.remove('multiplayer-mode');
 
   if(socket && socket.readyState===WebSocket.OPEN){
     if(multiplayerMatchId){
@@ -828,6 +834,7 @@ function showHome(){
 function handleEnterArena(){
   playClickSound();
   isAIMode=false;
+  document.body.classList.add('multiplayer-mode');
   document.getElementById('main-website-content').style.display='none';
   document.getElementById('arenaSection').classList.add('active');
   document.getElementById('gameSection').classList.remove('active');
@@ -841,6 +848,7 @@ function handleEnterArena(){
 function handlePlayerVsAI(){
   playClickSound();
   isAIMode=true;
+  document.body.classList.remove('multiplayer-mode');
   if(!myName){
     myName='Player';
     localStorage.setItem('ox_player_name',myName);
@@ -865,6 +873,7 @@ function startAIMatch(d){
   currentDifficulty=d;
   opponentName='Computer ('+d.toUpperCase()+')';
   isAIMode=true;
+  document.body.classList.remove('multiplayer-mode');
   multiplayerMatchId=null;
   mySymbol='O';
   opponentSymbol='X';
@@ -952,7 +961,7 @@ function connectMultiplayer(){
     try{m=JSON.parse(e.data);}catch(_){return;}
 
     if (m.type === 'chat') {
-      showFloatingChatBubble(m.from || opponentName, m.message);
+      showFloatingChatBubble(m.from || opponentName, m.message, false);
       return;
     }
 
@@ -971,6 +980,7 @@ function connectMultiplayer(){
       opponentSymbol=mySymbol==='X'?'O':'X';
       isMyTurn=!!m.yourTurn;
 
+      document.body.classList.add('multiplayer-mode');
       document.getElementById('arenaSection').classList.remove('active');
       document.getElementById('gameSection').classList.add('active');
       resetGame();
@@ -1060,6 +1070,7 @@ function startMatchmaking(){
   playClickSound();
   clearAIMoveTimer();
   isAIMode=false;
+  document.body.classList.add('multiplayer-mode');
   rematchRequestedByMe=false;
   rematchRequestedByOpponent=false;
 
@@ -1271,21 +1282,21 @@ function minimax(b,depth,maximizing){
 function getHardMove(){
   let best=-Infinity,move;
   for(let i=0;i<9;i++){
-    if(!b[i]){
+    if(!board[i]){
       board[i]=opponentSymbol;
       const s=minimax(board,0,false);
       board[i]='';
       if(s>best){best=s;move=i;}
     }
   }
-  return move;
+  return move!==undefined?move:getRandomMove();
 }
 
 function makeAIMoveBasedOnDifficulty(){
   aiMoveTimer=null;
   if(!isGameActive || isMyTurn)return;
 
-  let m=currentDifficulty==='easy'?getRandomMove():currentDifficulty==='medium'?getMediumMode():getHardMove();
+  let m=currentDifficulty==='easy'?getRandomMove():currentDifficulty==='medium'?getMediumMove():getHardMove();
   if(m!==undefined){
     playClickSound();
     board[m]=opponentSymbol;
@@ -1331,5 +1342,5 @@ document.getElementById('oxChatInput').addEventListener('keydown',e=>{if(e.key==
 </script>
 
 </body>
-    </html>
+  </html>
       
