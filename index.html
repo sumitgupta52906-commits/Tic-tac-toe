@@ -75,12 +75,18 @@ h1 span{color:#f59e0b}
 .btn-secondary{flex:1;background:#1f2937;color:#f3f4f6;border:1px solid #374151;padding:12px;font-weight:700;border-radius:4px;cursor:pointer;text-transform:uppercase;font-size:.85rem;outline:none}
 .change-name-btn{background:none;border:none;color:#9ca3af;font-size:.8rem;text-decoration:underline;cursor:pointer;display:block;margin:0 auto;outline:none}
 
-/* CARROM STYLE CHAT SYSTEM STYLES */
+/* BOTTOM AREA CONTAINER FOR CHAT LAUNCHER & BUTTONS */
+.game-bottom-action-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 15px;
+  position: relative;
+}
+
+/* CARROM STYLE CHAT SYSTEM STYLES (MOVED TO BOTTOM EMPTY SPACE) */
 .ox-chat-launcher {
   display: flex;
-  position: absolute;
-  left: 12px;
-  bottom: 12px;
   width: 44px;
   height: 44px;
   border-radius: 50%;
@@ -88,7 +94,6 @@ h1 span{color:#f59e0b}
   background: #111827;
   color: #f59e0b;
   font-size: 20px;
-  z-index: 100;
   cursor: pointer;
   box-shadow: 0 4px 15px rgba(245,158,11,0.4);
   align-items: center;
@@ -98,10 +103,10 @@ h1 span{color:#f59e0b}
 .ox-chat-panel {
   display: none;
   position: absolute;
-  left: 12px;
-  bottom: 65px;
+  left: 0;
+  bottom: 55px;
   width: 260px;
-  height: 320px;
+  height: 290px;
   background: rgba(17, 24, 39, 0.96);
   backdrop-filter: blur(8px);
   border: 1px solid #f59e0b;
@@ -114,26 +119,41 @@ h1 span{color:#f59e0b}
 .ox-chat-panel.active {
   display: flex;
 }
-.ox-chat-tabs {
+.ox-chat-header-bar {
   display: flex;
+  justify-content: space-between;
+  align-items: center;
   background: #1f2937;
+  padding: 4px 8px;
   border-bottom: 1px solid #374151;
 }
+.ox-chat-tabs {
+  display: flex;
+  gap: 4px;
+}
 .ox-chat-tab {
-  flex: 1;
-  padding: 10px;
+  padding: 6px 12px;
   text-align: center;
   background: none;
   border: none;
   color: #9ca3af;
-  font-size: 1.1rem;
+  font-size: 1rem;
   cursor: pointer;
   outline: none;
 }
 .ox-chat-tab.active {
   color: #f59e0b;
   border-bottom: 2px solid #f59e0b;
-  background: rgba(245,158,11,0.05);
+}
+.ox-close-btn {
+  background: none;
+  border: none;
+  color: #ef4444;
+  font-size: 1.2rem;
+  font-weight: bold;
+  cursor: pointer;
+  padding: 0 6px;
+  outline: none;
 }
 .ox-chat-body {
   flex: 1;
@@ -141,7 +161,7 @@ h1 span{color:#f59e0b}
   padding: 10px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 .ox-quick-list {
   display: flex;
@@ -208,24 +228,39 @@ h1 span{color:#f59e0b}
   cursor: pointer;
   font-size: 0.85rem;
 }
-.ox-msg-bubble {
-  padding: 6px 10px;
-  border-radius: 6px;
-  font-size: 0.85rem;
-  max-width: 85%;
+
+/* FLOATING CHAT BUBBLES ON TOP OF GAME BOARD */
+.ox-floating-toast-container {
+  position: absolute;
+  top: 15px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  z-index: 120;
+  pointer-events: none;
+  width: 90%;
+  align-items: center;
+}
+.ox-float-bubble {
+  background: rgba(17, 24, 39, 0.92);
+  border: 1px solid #f59e0b;
+  color: #f3f4f6;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+  animation: fadeInOut 4s forwards;
+  max-width: 100%;
+  text-align: center;
   word-break: break-word;
 }
-.ox-msg-bubble.mine {
-  background: rgba(245,158,11,0.2);
-  border: 1px solid #f59e0b;
-  align-self: flex-end;
-  color: #f3f4f6;
-}
-.ox-msg-bubble.other {
-  background: #1f2937;
-  border: 1px solid #374151;
-  align-self: flex-start;
-  color: #f3f4f6;
+@keyframes fadeInOut {
+  0% { opacity: 0; transform: translateY(-10px); }
+  15% { opacity: 1; transform: translateY(0); }
+  85% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-10px); }
 }
 
 .rematch-toast{position:fixed;top:78px;left:50%;transform:translate(-50%,-20px);width:calc(100% - 32px);max-width:420px;background:#111827;border:1px solid #f59e0b;border-radius:10px;padding:14px 16px;z-index:500;opacity:0;pointer-events:none;transition:opacity .2s ease,transform .2s ease;box-shadow:0 12px 30px rgba(0,0,0,.45)}
@@ -315,26 +350,21 @@ h1 span{color:#f59e0b}
   </div>
 </section>
 
-<!-- DEMO / ESTIMATED STATS -->
 <section class="stats-section" id="stats">
-
   <div class="stat-box">
     <h2 id="livePlayersCount">12</h2>
     <p>Active Players Online</p>
     <small class="stat-demo-note">Demo Estimate</small>
   </div>
-
   <div class="stat-box">
     <h2 id="matchesPlayedCount">147</h2>
     <p>Matches Played Today</p>
     <small class="stat-demo-note">Demo Estimate</small>
   </div>
-
   <div class="stat-box">
     <h2>&lt; 30s</h2>
     <p>Avg Match Time</p>
   </div>
-
 </section>
 
 <div class="section-title-box" id="howitworks">
@@ -342,25 +372,21 @@ h1 span{color:#f59e0b}
 </div>
 
 <div class="cards-container">
-
   <div class="feature-card">
     <div class="step-num">01</div>
     <h3>Jump In</h3>
     <p>No account needed. Hit Play and you're matched instantly with a live opponent.</p>
   </div>
-
   <div class="feature-card">
     <div class="step-num">02</div>
     <h3>Outthink</h3>
     <p>Place your pieces, read your opponent, and control the board. Every move counts.</p>
   </div>
-
   <div class="feature-card">
     <div class="step-num">03</div>
     <h3>Dominate</h3>
     <p>Win the match and prove your skills.</p>
   </div>
-
 </div>
 
 <div class="section-title-box" id="whyox">
@@ -368,27 +394,22 @@ h1 span{color:#f59e0b}
 </div>
 
 <div class="cards-container">
-
   <div class="feature-card">
     <h3>Quick Matches</h3>
     <p>Games are short and perfect for a quick break.</p>
   </div>
-
   <div class="feature-card">
     <h3>Pure Strategy</h3>
     <p>No luck. No randomness. Just tactical skills.</p>
   </div>
-
   <div class="feature-card">
     <h3>No Download</h3>
     <p>Runs entirely in your browser instantly.</p>
   </div>
-
   <div class="feature-card">
     <h3>Live Leaderboards</h3>
     <p>Compete with players worldwide.</p>
   </div>
-
 </div>
 
 <div class="section-title-box">
@@ -410,7 +431,6 @@ h1 span{color:#f59e0b}
 </div>
 
 <section class="arena-section" id="arenaSection">
-
 <div class="arena-box">
 
 <div id="formContainer">
@@ -423,33 +443,20 @@ h1 span{color:#f59e0b}
   </div>
 
   <button class="btn-primary" onclick="saveNameAndMatch()">⚔️ Find Match</button>
-
   <a href="#" class="back-link" onclick="showHome();return false">← Back to home</a>
 </div>
 
 <div id="aiDifficultyContainer" style="display:none">
-
   <h2>Player vs AI</h2>
   <p>Select your challenge level.</p>
 
   <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:20px">
-
-    <button class="btn-primary" onclick="startAIMatch('easy')" style="background:#1f2937;color:#22c55e;border:1px solid #22c55e">
-      Easy Mode
-    </button>
-
-    <button class="btn-primary" onclick="startAIMatch('medium')" style="background:#1f2937;color:#f59e0b;border:1px solid #f59e0b">
-      Medium Mode
-    </button>
-
-    <button class="btn-primary" onclick="startAIMatch('hard')" style="background:#1f2937;color:#ef4444;border:1px solid #ef4444">
-      Hard Mode
-    </button>
-
+    <button class="btn-primary" onclick="startAIMatch('easy')" style="background:#1f2937;color:#22c55e;border:1px solid #22c55e">Easy Mode</button>
+    <button class="btn-primary" onclick="startAIMatch('medium')" style="background:#1f2937;color:#f59e0b;border:1px solid #f59e0b">Medium Mode</button>
+    <button class="btn-primary" onclick="startAIMatch('hard')" style="background:#1f2937;color:#ef4444;border:1px solid #ef4444">Hard Mode</button>
   </div>
 
   <a href="#" class="back-link" onclick="showHome();return false">← Back to home</a>
-
 </div>
 
 <div class="searching-loader" id="searchingLoader">
@@ -470,15 +477,42 @@ h1 span{color:#f59e0b}
   <div class="corner-marker marker-bl"></div>
   <div class="corner-marker marker-br"></div>
 
-  <!-- Carrom Style Chat Launcher Button at Bottom-Left -->
-  <button class="ox-chat-launcher" onclick="toggleOXChat()" title="Chat">💬</button>
+  <!-- Floating Chat Bubbles Toast Container (Top of Game) -->
+  <div class="ox-floating-toast-container" id="oxFloatingToastContainer"></div>
 
-  <!-- Carrom Style Chat Panel -->
-  <div class="ox-chat-panel" id="oxChatPanel">
-    <div class="ox-chat-tabs">
-      <button class="ox-chat-tab active" id="oxMessageTab" onclick="showOXChatTab('messages')">💬</button>
-      <button class="ox-chat-tab" id="oxEmojiTab" onclick="showOXChatTab('emojis')">😊</button>
+  <div class="game-status" id="status">Live Match Active</div>
+
+  <div class="board" id="board">
+    <div class="cell" data-index="0"></div>
+    <div class="cell" data-index="1"></div>
+    <div class="cell" data-index="2"></div>
+    <div class="cell" data-index="3"></div>
+    <div class="cell" data-index="4"></div>
+    <div class="cell" data-index="5"></div>
+    <div class="cell" data-index="6"></div>
+    <div class="cell" data-index="7"></div>
+    <div class="cell" data-index="8"></div>
+  </div>
+
+  <!-- Bottom Empty Space Action Bar containing Chat Launcher & Controls -->
+  <div class="game-bottom-action-bar">
+    <button class="ox-chat-launcher" onclick="toggleOXChat()" title="Chat">💬</button>
+
+    <div style="flex:1; display:flex; justify-content:flex-end;">
+      <button class="btn-secondary" onclick="handleNewMatchFromControls()" style="max-width:140px; padding:10px;">New Match</button>
     </div>
+  </div>
+
+  <!-- Carrom Style Chat Panel (Placed neatly above bottom bar) -->
+  <div class="ox-chat-panel" id="oxChatPanel">
+    <div class="ox-chat-header-bar">
+      <div class="ox-chat-tabs">
+        <button class="ox-chat-tab active" id="oxMessageTab" onclick="showOXChatTab('messages')">💬</button>
+        <button class="ox-chat-tab" id="oxEmojiTab" onclick="showOXChatTab('emojis')">😊</button>
+      </div>
+      <button class="ox-close-btn" onclick="toggleOXChat()" title="Close">✕</button>
+    </div>
+
     <div class="ox-chat-body" id="oxChatBodyContent">
       <div id="oxQuickMessages" class="ox-quick-list">
         <button class="ox-quick-btn" onclick="sendOXChatText('Good luck!')">Good luck!</button>
@@ -495,59 +529,27 @@ h1 span{color:#f59e0b}
         <button class="ox-emoji-btn" onclick="sendOXChatText('😂')">😂</button>
         <button class="ox-emoji-btn" onclick="sendOXChatText('🎯')">🎯</button>
       </div>
-      <div id="oxLiveMessages" style="display:flex;flex-direction:column;gap:6px;margin-top:auto;"></div>
     </div>
+
     <div class="ox-chat-footer">
       <input type="text" id="oxChatInput" class="ox-chat-input" placeholder="Type here..." maxlength="50">
       <button class="ox-chat-send" onclick="sendOXTypedMessage()">Send</button>
     </div>
   </div>
 
-  <div class="game-status" id="status">Live Match Active</div>
-
-  <div class="board" id="board">
-    <div class="cell" data-index="0"></div>
-    <div class="cell" data-index="1"></div>
-    <div class="cell" data-index="2"></div>
-    <div class="cell" data-index="3"></div>
-    <div class="cell" data-index="4"></div>
-    <div class="cell" data-index="5"></div>
-    <div class="cell" data-index="6"></div>
-    <div class="cell" data-index="7"></div>
-    <div class="cell" data-index="8"></div>
+  <div style="margin-top:15px; display:flex; justify-content:space-between; align-items:center;">
+    <button class="change-name-btn" onclick="promptChangeName()" style="margin:0">Change Name</button>
+    <button class="btn-secondary" onclick="showHome()" style="max-width:110px; padding:8px; font-size:0.75rem;">Exit Arena</button>
   </div>
-
-  <div class="game-controls">
-    <button class="btn-secondary" onclick="handleNewMatchFromControls()">New Match</button>
-    <button class="btn-secondary" onclick="showHome()">Exit Arena</button>
-  </div>
-
-  <button class="change-name-btn" onclick="promptChangeName()">Change Player Name</button>
 
   <div class="game-over-modal" id="gameOverModal">
-
     <div class="modal-title" id="modalTitle">Match Over</div>
-
-    <div class="modal-subtitle" id="modalSubtitle">
-      Preparing next battle...
-    </div>
-
+    <div class="modal-subtitle" id="modalSubtitle">Preparing next battle...</div>
     <div class="modal-btn-group">
-
-      <button class="btn-primary" onclick="handleNewMatchFromModal()">
-        New Match
-      </button>
-
-      <button class="btn-secondary" onclick="requestRematch()" id="rematchBtnModal">
-        Rematch
-      </button>
-
-      <button class="btn-secondary" onclick="showHome()" style="width:100%">
-        Exit Arena
-      </button>
-
+      <button class="btn-primary" onclick="handleNewMatchFromModal()">New Match</button>
+      <button class="btn-secondary" onclick="requestRematch()" id="rematchBtnModal">Rematch</button>
+      <button class="btn-secondary" onclick="showHome()" style="width:100%">Exit Arena</button>
     </div>
-
   </div>
 
 </div>
@@ -561,7 +563,6 @@ function initAudio(){
   try{
     if(!audioCtx)
       audioCtx=new(window.AudioContext||window.webkitAudioContext)();
-
     if(audioCtx.state==='suspended')
       audioCtx.resume();
   }catch(e){}
@@ -576,56 +577,35 @@ function toggleSound(){
   isSoundEnabled=!isSoundEnabled;
   localStorage.setItem('ox_sound_on',isSoundEnabled);
   updateSoundButtonUI();
-
-  if(isSoundEnabled)
-    playClickSound();
+  if(isSoundEnabled)playClickSound();
 }
 
 function playSound(f,t,d,g=.1){
   if(!isSoundEnabled)return;
-
   try{
     initAudio();
-
     const o=audioCtx.createOscillator();
     const a=audioCtx.createGain();
-
     o.type=t;
     o.frequency.value=f;
-
     a.gain.setValueAtTime(g,audioCtx.currentTime);
     a.gain.exponentialRampToValueAtTime(.0001,audioCtx.currentTime+d);
-
     o.connect(a);
     a.connect(audioCtx.destination);
-
     o.start();
     o.stop(audioCtx.currentTime+d);
-
   }catch(e){}
 }
 
-function playClickSound(){
-  playSound(400,'sine',.08,.08);
-}
-
-function playWinSound(){
-  [523.25,659.25,783.99,1046.5].forEach((f,i)=>
-    setTimeout(()=>playSound(f,'triangle',.18,.12),i*100)
-  );
-}
-
-function playLoseSound(){
-  [350,300,240,180].forEach((f,i)=>
-    setTimeout(()=>playSound(f,'sawtooth',.18,.1),i*120)
-  );
-}
+function playClickSound(){playSound(400,'sine',.08,.08);}
+function playWinSound(){[523.25,659.25,783.99,1046.5].forEach((f,i)=>setTimeout(()=>playSound(f,'triangle',.18,.12),i*100));}
+function playLoseSound(){[350,300,240,180].forEach((f,i)=>setTimeout(()=>playSound(f,'sawtooth',.18,.1),i*120));}
 
 updateSoundButtonUI();
 
 
 /* =========================================================
-   CHAT SYSTEM FUNCTIONS (CARROM STYLE)
+   CHAT SYSTEM FUNCTIONS (FLOATING TOASTS ON TOP)
    ========================================================= */
 
 function toggleOXChat() {
@@ -654,39 +634,45 @@ function showOXChatTab(tab) {
   }
 }
 
-function addOXChatMessage(text, mine) {
-  const container = document.getElementById('oxLiveMessages');
+function showFloatingChatBubble(senderName, text) {
+  const container = document.getElementById('oxFloatingToastContainer');
   if (!container) return;
-  const bubble = document.createElement('div');
-  bubble.className = 'ox-msg-bubble ' + (mine ? 'mine' : 'other');
-  bubble.textContent = text;
-  container.appendChild(bubble);
-  container.scrollTop = container.scrollHeight;
 
-  // Auto remove after 8 seconds
+  const bubble = document.createElement('div');
+  bubble.className = 'ox-float-bubble';
+  bubble.textContent = `${senderName}: ${text}`;
+  
+  container.appendChild(bubble);
+
+  // Auto remove after animation completes (4 seconds)
   setTimeout(() => {
     bubble.remove();
-  }, 8000);
+  }, 4000);
 }
 
 function sendOXChatText(text) {
   playClickSound();
+  const currentName = myName || 'Player';
+  
+  // Show immediately on own screen as a top floating bubble
+  showFloatingChatBubble(currentName, text);
+
+  // Close chat panel after sending
+  document.getElementById('oxChatPanel').classList.remove('active');
+
   if (isAIMode) {
-    addOXChatMessage(text, true);
     setTimeout(() => {
       const replies = ['Nice!', 'Thanks!', 'Good game!', 'Hmm...'];
       const reply = replies[Math.floor(Math.random() * replies.length)];
-      addOXChatMessage(reply, false);
-    }, 600);
+      showFloatingChatBubble(opponentName, reply);
+    }, 800);
     return;
   }
 
   if (!socket || socket.readyState !== WebSocket.OPEN || !multiplayerMatchId) {
-    alert('Not connected to a live match!');
     return;
   }
 
-  addOXChatMessage(text, true);
   socket.send(JSON.stringify({
     type: 'chat',
     matchId: multiplayerMatchId,
@@ -715,35 +701,17 @@ let demoOnlinePlayers=12+Math.floor(Math.random()*10);
 let demoMatchesToday=140+Math.floor(Math.random()*35);
 
 function updateDemoStats(){
-
   const playerChange=Math.floor(Math.random()*5)-2;
-
-  demoOnlinePlayers=Math.max(
-    5,
-    Math.min(40,demoOnlinePlayers+playerChange)
-  );
-
-  if(Math.random()<0.35){
-    demoMatchesToday+=1+Math.floor(Math.random()*3);
-  }
-
-  if(livePlayersCountElement)
-    livePlayersCountElement.textContent=demoOnlinePlayers;
-
-  if(matchesPlayedCountElement)
-    matchesPlayedCountElement.textContent=demoMatchesToday;
+  demoOnlinePlayers=Math.max(5,Math.min(40,demoOnlinePlayers+playerChange));
+  if(Math.random()<0.35){demoMatchesToday+=1+Math.floor(Math.random()*3);}
+  if(livePlayersCountElement)livePlayersCountElement.textContent=demoOnlinePlayers;
+  if(matchesPlayedCountElement)matchesPlayedCountElement.textContent=demoMatchesToday;
 }
 
-if(livePlayersCountElement)
-  livePlayersCountElement.textContent=demoOnlinePlayers;
+if(livePlayersCountElement)livePlayersCountElement.textContent=demoOnlinePlayers;
+if(matchesPlayedCountElement)matchesPlayedCountElement.textContent=demoMatchesToday;
 
-if(matchesPlayedCountElement)
-  matchesPlayedCountElement.textContent=demoMatchesToday;
-
-setInterval(
-  updateDemoStats,
-  20000+Math.random()*20000
-);
+setInterval(updateDemoStats,20000+Math.random()*20000);
 
 
 /* =========================================================
@@ -777,14 +745,9 @@ const cells=document.querySelectorAll('.cell'),
       statusElement=document.getElementById('status');
 
 const winningConditions=[
-  [0,1,2],
-  [3,4,5],
-  [6,7,8],
-  [0,3,6],
-  [1,4,7],
-  [2,5,8],
-  [0,4,8],
-  [2,4,6]
+  [0,1,2],[3,4,5],[6,7,8],
+  [0,3,6],[1,4,7],[2,5,8],
+  [0,4,8],[2,4,6]
 ];
 
 
@@ -803,53 +766,28 @@ function closeMenuAndGoHome(){
 }
 
 function clearAIMoveTimer(){
-  if(aiMoveTimer){
-    clearTimeout(aiMoveTimer);
-    aiMoveTimer=null;
-  }
+  if(aiMoveTimer){clearTimeout(aiMoveTimer);aiMoveTimer=null;}
 }
 
 function hideRematchToast(){
-
   const t=document.getElementById('rematchToast');
-
-  if(t)
-    t.classList.remove('show');
-
-  if(rematchToastTimer){
-    clearTimeout(rematchToastTimer);
-    rematchToastTimer=null;
-  }
+  if(t)t.classList.remove('show');
+  if(rematchToastTimer){clearTimeout(rematchToastTimer);rematchToastTimer=null;}
 }
 
 function showRematchNotification(){
-
   const t=document.getElementById('rematchToast');
   const x=document.getElementById('rematchToastText');
-
-  if(x)
-    x.textContent=opponentName+' wants another round!';
-
+  if(x)x.textContent=opponentName+' wants another round!';
   t.classList.add('show');
-
   playClickSound();
-
   clearTimeout(rematchToastTimer);
-
-  rematchToastTimer=setTimeout(
-    hideRematchToast,
-    5000
-  );
+  rematchToastTimer=setTimeout(hideRematchToast,5000);
 }
 
 function setRematchButtonState(text,disabled){
-
   const b=document.getElementById('rematchBtnModal');
-
-  if(b){
-    b.textContent=text;
-    b.disabled=disabled;
-  }
+  if(b){b.textContent=text;b.disabled=disabled;}
 }
 
 
@@ -858,39 +796,27 @@ function setRematchButtonState(text,disabled){
    ========================================================= */
 
 function showHome(){
-
   playClickSound();
   clearAIMoveTimer();
-
   matchmakingActive=false;
   rematchRequestedByMe=false;
   rematchRequestedByOpponent=false;
-
   hideRematchToast();
 
   if(socket && socket.readyState===WebSocket.OPEN){
-
     if(multiplayerMatchId){
-      socket.send(JSON.stringify({
-        type:'leaveMatch',
-        matchId:multiplayerMatchId
-      }));
+      socket.send(JSON.stringify({type:'leaveMatch',matchId:multiplayerMatchId}));
     }
-
-    socket.send(JSON.stringify({
-      type:'leaveQueue'
-    }));
+    socket.send(JSON.stringify({type:'leaveQueue'}));
   }
 
   multiplayerMatchId=null;
   isGameActive=false;
 
   document.getElementById('gameOverModal').classList.remove('active');
-
   document.getElementById('main-website-content').style.display='block';
   document.getElementById('arenaSection').classList.remove('active');
   document.getElementById('gameSection').classList.remove('active');
-
   window.scrollTo(0,0);
 }
 
@@ -900,44 +826,31 @@ function showHome(){
    ========================================================= */
 
 function handleEnterArena(){
-
   playClickSound();
-
   isAIMode=false;
-
   document.getElementById('main-website-content').style.display='none';
   document.getElementById('arenaSection').classList.add('active');
   document.getElementById('gameSection').classList.remove('active');
-
   document.getElementById('formContainer').style.display=myName?'none':'block';
   document.getElementById('aiDifficultyContainer').style.display='none';
   document.getElementById('searchingLoader').style.display=myName?'flex':'none';
-
-  if(myName)
-    startMatchmaking();
-
+  if(myName)startMatchmaking();
   window.scrollTo(0,0);
 }
 
 function handlePlayerVsAI(){
-
   playClickSound();
-
   isAIMode=true;
-
   if(!myName){
     myName='Player';
     localStorage.setItem('ox_player_name',myName);
   }
-
   document.getElementById('main-website-content').style.display='none';
   document.getElementById('arenaSection').classList.add('active');
   document.getElementById('gameSection').classList.remove('active');
-
   document.getElementById('formContainer').style.display='none';
   document.getElementById('aiDifficultyContainer').style.display='block';
   document.getElementById('searchingLoader').style.display='none';
-
   window.scrollTo(0,0);
 }
 
@@ -947,53 +860,35 @@ function handlePlayerVsAI(){
    ========================================================= */
 
 function startAIMatch(d){
-
   playClickSound();
   clearAIMoveTimer();
-
   currentDifficulty=d;
   opponentName='Computer ('+d.toUpperCase()+')';
-
   isAIMode=true;
   multiplayerMatchId=null;
-
   mySymbol='O';
   opponentSymbol='X';
-
   isMyTurn=Math.random()<.5;
 
   document.getElementById('arenaSection').classList.remove('active');
   document.getElementById('gameSection').classList.add('active');
-
   resetGame();
 
   if(!isMyTurn){
-
-    statusElement.textContent=
-      opponentName+' ('+opponentSymbol+') is thinking...';
-
-    aiMoveTimer=setTimeout(
-      makeAIMoveBasedOnDifficulty,
-      850
-    );
+    statusElement.textContent=opponentName+' ('+opponentSymbol+') is thinking...';
+    aiMoveTimer=setTimeout(makeAIMoveBasedOnDifficulty,850);
   }
 }
 
 function handleNewMatchFromControls(){
-
   playClickSound();
   clearAIMoveTimer();
-
-  if(isAIMode)
-    startAIMatch(currentDifficulty);
-  else
-    startMatchmaking();
+  if(isAIMode)startAIMatch(currentDifficulty);
+  else startMatchmaking();
 }
 
 function handleNewMatchFromModal(){
-
   document.getElementById('gameOverModal').classList.remove('active');
-
   handleNewMatchFromControls();
 }
 
@@ -1003,52 +898,22 @@ function handleNewMatchFromModal(){
    ========================================================= */
 
 function saveNameAndMatch(){
-
   playClickSound();
-
-  const v=document.getElementById('playerNameInput')
-    .value.trim()
-    .slice(0,20);
-
-  if(!v){
-    alert('Please enter your player name first!');
-    return;
-  }
-
+  const v=document.getElementById('playerNameInput').value.trim().slice(0,20);
+  if(!v){alert('Please enter your player name first!');return;}
   myName=v;
-
-  localStorage.setItem(
-    'ox_player_name',
-    myName
-  );
-
+  localStorage.setItem('ox_player_name',myName);
   startMatchmaking();
 }
 
 function promptChangeName(){
-
   playClickSound();
-
-  const v=prompt(
-    'Enter your new player name:',
-    myName
-  );
-
+  const v=prompt('Enter your new player name:',myName);
   if(v && v.trim()){
-
     myName=v.trim().slice(0,20);
-
-    localStorage.setItem(
-      'ox_player_name',
-      myName
-    );
-
+    localStorage.setItem('ox_player_name',myName);
     if(isGameActive){
-
-      statusElement.textContent=
-        isMyTurn
-        ? `${myName} (${mySymbol})'s turn`
-        : `${opponentName} (${opponentSymbol}) is thinking...`;
+      statusElement.textContent=isMyTurn?`${myName} (${mySymbol})'s turn`:`${opponentName} (${opponentSymbol}) is thinking...`;
     }
   }
 }
@@ -1059,290 +924,129 @@ function promptChangeName(){
    ========================================================= */
 
 function connectMultiplayer(){
-
-  if(
-    socket &&
-    (
-      socket.readyState===WebSocket.OPEN ||
-      socket.readyState===WebSocket.CONNECTING
-    )
-  )
-    return;
-
-  const p=
-    location.protocol==='https:'
-    ? 'wss:'
-    : 'ws:';
-
-  socket=new WebSocket(
-    p+'//'+location.host
-  );
+  if(socket && (socket.readyState===WebSocket.OPEN || socket.readyState===WebSocket.CONNECTING))return;
+  const p=location.protocol==='https:'?'wss:':'ws:';
+  socket=new WebSocket(p+'//'+location.host);
 
   socket.onopen=()=>{
-
     multiplayerConnected=true;
-
     if(matchmakingActive && myName){
-
-      socket.send(JSON.stringify({
-        type:'joinQueue',
-        name:myName
-      }));
-
-      document.getElementById(
-        'matchmakingStatusText'
-      ).textContent='Waiting for a real player...';
+      socket.send(JSON.stringify({type:'joinQueue',name:myName}));
+      document.getElementById('matchmakingStatusText').textContent='Waiting for real player...';
     }
   };
 
   socket.onclose=()=>{
-
     multiplayerConnected=false;
-
     if(matchmakingActive && !multiplayerMatchId){
-
       clearTimeout(reconnectTimer);
-
-      document.getElementById(
-        'matchmakingStatusText'
-      ).textContent=
-        'Reconnecting to multiplayer server...';
-
-      reconnectTimer=setTimeout(
-        connectMultiplayer,
-        800
-      );
+      document.getElementById('matchmakingStatusText').textContent='Reconnecting to server...';
+      reconnectTimer=setTimeout(connectMultiplayer,800);
     }
   };
 
-  socket.onerror=()=>{
-    multiplayerConnected=false;
-  };
+  socket.onerror=()=>{multiplayerConnected=false;};
 
   socket.onmessage=e=>{
-
     let m;
-
-    try{
-      m=JSON.parse(e.data);
-    }catch(_){
-      return;
-    }
+    try{m=JSON.parse(e.data);}catch(_){return;}
 
     if (m.type === 'chat') {
-      addOXChatMessage(m.message, false);
+      showFloatingChatBubble(m.from || opponentName, m.message);
       return;
     }
 
     if(m.type==='waiting'){
-
-      document.getElementById(
-        'matchmakingStatusText'
-      ).textContent=
-        'Waiting for a real player...';
-
+      document.getElementById('matchmakingStatusText').textContent='Waiting for real player...';
       return;
     }
 
     if(m.type==='matchFound'){
-
       matchmakingActive=false;
-
       rematchRequestedByMe=false;
       rematchRequestedByOpponent=false;
-
       multiplayerMatchId=m.matchId;
-
       opponentName=m.opponentName||'Opponent';
-
       mySymbol=m.symbol;
-
-      opponentSymbol=
-        mySymbol==='X'
-        ? 'O'
-        : 'X';
-
+      opponentSymbol=mySymbol==='X'?'O':'X';
       isMyTurn=!!m.yourTurn;
 
-      document.getElementById(
-        'arenaSection'
-      ).classList.remove('active');
-
-      document.getElementById(
-        'gameSection'
-      ).classList.add('active');
-
+      document.getElementById('arenaSection').classList.remove('active');
+      document.getElementById('gameSection').classList.add('active');
       resetGame();
-
       return;
     }
 
     if(m.type==='move'){
-
-      if(Array.isArray(m.board))
-        board=m.board;
-
+      if(Array.isArray(m.board))board=m.board;
       isMyTurn=m.nextTurn===mySymbol;
-
       renderBoard();
-
       if(!m.gameOver){
-
-        statusElement.textContent=
-          isMyTurn
-          ? `${myName} (${mySymbol})'s turn`
-          : `${opponentName} (${opponentSymbol}) is thinking...`;
+        statusElement.textContent=isMyTurn?`${myName} (${mySymbol})'s turn`:`${opponentName} (${opponentSymbol}) is thinking...`;
       }
-
       return;
     }
 
     if(m.type==='gameOver'){
-
-      if(Array.isArray(m.board))
-        board=m.board;
-
+      if(Array.isArray(m.board))board=m.board;
       renderBoard();
-
       isGameActive=false;
-
       showGameResult(m.result);
-
       return;
     }
 
     if(m.type==='rematchRequested'){
-
       isGameActive=false;
-
       rematchRequestedByMe=false;
       rematchRequestedByOpponent=true;
-
       showRematchNotification();
-
-      setRematchButtonState(
-        'Accept Rematch',
-        false
-      );
-
-      document.getElementById(
-        'modalTitle'
-      ).textContent='Rematch? 🔁';
-
-      document.getElementById(
-        'modalSubtitle'
-      ).textContent=
-        opponentName+' wants another round.';
-
-      document.getElementById(
-        'gameOverModal'
-      ).classList.add('active');
-
+      setRematchButtonState('Accept Rematch',false);
+      document.getElementById('modalTitle').textContent='Rematch? 🔁';
+      document.getElementById('modalSubtitle').textContent=opponentName+' wants another round.';
+      document.getElementById('gameOverModal').classList.add('active');
       return;
     }
 
     if(m.type==='rematchStart'){
-
       hideRematchToast();
-
       rematchRequestedByMe=false;
       rematchRequestedByOpponent=false;
-
-      multiplayerMatchId=
-        m.matchId||multiplayerMatchId;
-
+      multiplayerMatchId=m.matchId||multiplayerMatchId;
       mySymbol=m.symbol;
-
-      opponentSymbol=
-        mySymbol==='X'
-        ? 'O'
-        : 'X';
-
+      opponentSymbol=mySymbol==='X'?'O':'X';
       isMyTurn=!!m.yourTurn;
-
-      document.getElementById(
-        'gameOverModal'
-      ).classList.remove('active');
-
-      setRematchButtonState(
-        'Rematch',
-        false
-      );
-
+      document.getElementById('gameOverModal').classList.remove('active');
+      setRematchButtonState('Rematch',false);
       resetGame();
-
       return;
     }
 
     if(m.type==='rematchDeclined'){
-
       rematchRequestedByMe=false;
-
-      setRematchButtonState(
-        'Rematch',
-        false
-      );
-
-      document.getElementById(
-        'modalTitle'
-      ).textContent='Rematch Declined';
-
-      document.getElementById(
-        'modalSubtitle'
-      ).textContent=
-        'Your opponent declined the rematch.';
-
+      setRematchButtonState('Rematch',false);
+      document.getElementById('modalTitle').textContent='Rematch Declined';
+      document.getElementById('modalSubtitle').textContent='Your opponent declined rematch.';
       return;
     }
 
     if(m.type==='opponentLeft'){
-
       isGameActive=false;
-
       rematchRequestedByMe=false;
       rematchRequestedByOpponent=false;
-
-      statusElement.textContent=
-        'Opponent left the match.';
-
-      document.getElementById(
-        'modalTitle'
-      ).textContent='Opponent Left';
-
-      document.getElementById(
-        'modalSubtitle'
-      ).textContent=
-        'Find another real player to play.';
-
-      setRematchButtonState(
-        'New Match',
-        false
-      );
-
-      document.getElementById(
-        'gameOverModal'
-      ).classList.add('active');
-
+      statusElement.textContent='Opponent left the match.';
+      document.getElementById('modalTitle').textContent='Opponent Left';
+      document.getElementById('modalSubtitle').textContent='Find another player to play.';
+      setRematchButtonState('New Match',false);
+      document.getElementById('gameOverModal').classList.add('active');
       return;
     }
 
     if(m.type==='error'){
-
-      if(
-        m.message &&
-        m.message.toLowerCase().includes('rematch')
-      ){
+      if(m.message && m.message.toLowerCase().includes('rematch')){
         rematchRequestedByMe=false;
-
-        setRematchButtonState(
-          'Rematch',
-          false
-        );
+        setRematchButtonState('Rematch',false);
       }
-
-      statusElement.textContent=
-        m.message||
-        'Something went wrong.';
+      statusElement.textContent=m.message||'Something went wrong.';
     }
   };
 }
@@ -1353,92 +1057,37 @@ function connectMultiplayer(){
    ========================================================= */
 
 function startMatchmaking(){
-
   playClickSound();
   clearAIMoveTimer();
-
   isAIMode=false;
-
   rematchRequestedByMe=false;
   rematchRequestedByOpponent=false;
 
-  if(
-    socket &&
-    socket.readyState===WebSocket.OPEN
-  ){
-
+  if(socket && socket.readyState===WebSocket.OPEN){
     if(multiplayerMatchId){
-
-      socket.send(JSON.stringify({
-        type:'leaveMatch',
-        matchId:multiplayerMatchId
-      }));
+      socket.send(JSON.stringify({type:'leaveMatch',matchId:multiplayerMatchId}));
     }
-
-    socket.send(JSON.stringify({
-      type:'leaveQueue'
-    }));
+    socket.send(JSON.stringify({type:'leaveQueue'}));
   }
 
   multiplayerMatchId=null;
   matchmakingActive=true;
-
   hideRematchToast();
+  setRematchButtonState('Rematch',false);
 
-  setRematchButtonState(
-    'Rematch',
-    false
-  );
+  document.getElementById('gameOverModal').classList.remove('active');
+  document.getElementById('main-website-content').style.display='none';
+  document.getElementById('arenaSection').classList.add('active');
+  document.getElementById('gameSection').classList.remove('active');
+  document.getElementById('formContainer').style.display='none';
+  document.getElementById('aiDifficultyContainer').style.display='none';
+  document.getElementById('searchingLoader').style.display='flex';
+  document.getElementById('matchmakingStatusText').textContent='Connecting to server...';
 
-  document.getElementById(
-    'gameOverModal'
-  ).classList.remove('active');
-
-  document.getElementById(
-    'main-website-content'
-  ).style.display='none';
-
-  document.getElementById(
-    'arenaSection'
-  ).classList.add('active');
-
-  document.getElementById(
-    'gameSection'
-  ).classList.remove('active');
-
-  document.getElementById(
-    'formContainer'
-  ).style.display='none';
-
-  document.getElementById(
-    'aiDifficultyContainer'
-  ).style.display='none';
-
-  document.getElementById(
-    'searchingLoader'
-  ).style.display='flex';
-
-  document.getElementById(
-    'matchmakingStatusText'
-  ).textContent=
-    'Connecting to multiplayer server...';
-
-  if(
-    !socket ||
-    socket.readyState!==WebSocket.OPEN
-  )
-    connectMultiplayer();
+  if(!socket || socket.readyState!==WebSocket.OPEN)connectMultiplayer();
   else{
-
-    socket.send(JSON.stringify({
-      type:'joinQueue',
-      name:myName
-    }));
-
-    document.getElementById(
-      'matchmakingStatusText'
-    ).textContent=
-      'Waiting for a real player...';
+    socket.send(JSON.stringify({type:'joinQueue',name:myName}));
+    document.getElementById('matchmakingStatusText').textContent='Waiting for real player...';
   }
 }
 
@@ -1448,81 +1097,33 @@ function startMatchmaking(){
    ========================================================= */
 
 function requestRematch(){
-
   playClickSound();
-
   if(isAIMode){
-
-    startAIMatch(
-      currentDifficulty
-    );
-
+    startAIMatch(currentDifficulty);
     return;
   }
 
-  if(
-    !multiplayerMatchId ||
-    !socket ||
-    socket.readyState!==WebSocket.OPEN
-  ){
-
+  if(!multiplayerMatchId || !socket || socket.readyState!==WebSocket.OPEN){
     startMatchmaking();
-
     return;
   }
 
   if(rematchRequestedByOpponent){
-
     rematchRequestedByOpponent=false;
     rematchRequestedByMe=false;
-
-    setRematchButtonState(
-      'Starting...',
-      true
-    );
-
-    document.getElementById(
-      'modalTitle'
-    ).textContent=
-      'Rematch Accepted 🔁';
-
-    document.getElementById(
-      'modalSubtitle'
-    ).textContent=
-      'Starting another round...';
-
-    socket.send(JSON.stringify({
-      type:'rematchAccept',
-      matchId:multiplayerMatchId
-    }));
-
+    setRematchButtonState('Starting...',true);
+    document.getElementById('modalTitle').textContent='Rematch Accepted 🔁';
+    document.getElementById('modalSubtitle').textContent='Starting round...';
+    socket.send(JSON.stringify({type:'rematchAccept',matchId:multiplayerMatchId}));
     return;
   }
 
-  if(rematchRequestedByMe)
-    return;
-
+  if(rematchRequestedByMe)return;
   rematchRequestedByMe=true;
-
-  setRematchButtonState(
-    'Requested ✓',
-    true
-  );
-
-  document.getElementById(
-    'modalTitle'
-  ).textContent=
-    'Rematch Requested';
-
-  document.getElementById(
-    'modalSubtitle'
-  ).textContent=
-    'Waiting for your opponent to accept...';
-
-  socket.send(JSON.stringify({
-    type:'rematchRequest',
-    matchId:multiplayerMatchId
-  }));
+  setRematchButtonState('Requested ✓',true);
+  document.getElementById('modalTitle').textContent='Rematch Requested';
+  document.getElementById('modalSubtitle').textContent='Waiting for opponent to accept...';
+  socket.send(JSON.stringify({type:'rematchRequest',matchId:multiplayerMatchId}));
 }
 
 
@@ -1532,58 +1133,23 @@ function requestRematch(){
 
 cells.forEach(c=>
   c.addEventListener('click',()=>{
-
     const i=Number(c.dataset.index);
-
-    if(!isGameActive || board[i])
-      return;
+    if(!isGameActive || board[i])return;
 
     if(isAIMode){
-
-      if(!isMyTurn)
-        return;
-
+      if(!isMyTurn)return;
       playClickSound();
-
       board[i]=mySymbol;
-
       renderBoard();
-
-      if(checkGameStatus())
-        return;
-
+      if(checkGameStatus())return;
       isMyTurn=false;
-
-      statusElement.textContent=
-        opponentName+
-        ' ('+
-        opponentSymbol+
-        ') is thinking...';
-
+      statusElement.textContent=opponentName+' ('+opponentSymbol+') is thinking...';
       clearAIMoveTimer();
-
-      aiMoveTimer=setTimeout(
-        makeAIMoveBasedOnDifficulty,
-        850
-      );
-
+      aiMoveTimer=setTimeout(makeAIMoveBasedOnDifficulty,850);
     }else{
-
-      if(
-        !isMyTurn ||
-        !multiplayerMatchId ||
-        !socket ||
-        socket.readyState!==WebSocket.OPEN
-      )
-        return;
-
+      if(!isMyTurn || !multiplayerMatchId || !socket || socket.readyState!==WebSocket.OPEN)return;
       playClickSound();
-
-      socket.send(JSON.stringify({
-        type:'move',
-        matchId:multiplayerMatchId,
-        index:i
-      }));
+      socket.send(JSON.stringify({type:'move',matchId:multiplayerMatchId,index:i}));
     }
   })
 );
@@ -1594,7 +1160,6 @@ cells.forEach(c=>
    ========================================================= */
 
 function renderBoard(){
-
   cells.forEach((c,i)=>{
     const val = board[i] || '';
     c.setAttribute('data-content', val);
@@ -1603,36 +1168,17 @@ function renderBoard(){
 }
 
 function checkWinner(b){
-
-  for(
-    const [a,c,d]
-    of winningConditions
-  ){
-
-    if(
-      b[a] &&
-      b[a]===b[c] &&
-      b[a]===b[d]
-    )
-      return b[a];
+  for(const [a,c,d] of winningConditions){
+    if(b[a] && b[a]===b[c] && b[a]===b[d])return b[a];
   }
-
-  return b.includes('')
-    ? null
-    : 'tie';
+  return b.includes('')?null:'tie';
 }
 
 function checkGameStatus(){
-
   const r=checkWinner(board);
-
-  if(!r)
-    return false;
-
+  if(!r)return false;
   isGameActive=false;
-
   showGameResult(r);
-
   return true;
 }
 
@@ -1642,73 +1188,27 @@ function checkGameStatus(){
    ========================================================= */
 
 function showGameResult(r){
-
   if(r===mySymbol){
-
     playWinSound();
-
-    statusElement.textContent=
-      `${myName||'Player'} (${mySymbol}) Wins! 🎉`;
-
-    document.getElementById(
-      'modalTitle'
-    ).textContent=
-      `${myName||'Player'} Wins! 🎉`;
-
-    document.getElementById(
-      'modalSubtitle'
-    ).textContent=
-      'Great strategy! Ready for the next match?';
-
+    statusElement.textContent=`${myName||'Player'} (${mySymbol}) Wins! 🎉`;
+    document.getElementById('modalTitle').textContent=`${myName||'Player'} Wins! 🎉`;
+    document.getElementById('modalSubtitle').textContent='Great strategy! Ready for next match?';
   }else if(r===opponentSymbol){
-
     playLoseSound();
-
-    statusElement.textContent=
-      `${opponentName} (${opponentSymbol}) Wins!`;
-
-    document.getElementById(
-      'modalTitle'
-    ).textContent=
-      `${opponentName} Wins!`;
-
-    document.getElementById(
-      'modalSubtitle'
-    ).textContent=
-      'Better luck next round!';
-
+    statusElement.textContent=`${opponentName} (${opponentSymbol}) Wins!`;
+    document.getElementById('modalTitle').textContent=`${opponentName} Wins!`;
+    document.getElementById('modalSubtitle').textContent='Better luck next round!';
   }else{
-
     playClickSound();
-
-    statusElement.textContent=
-      'Match Draw! 🤝';
-
-    document.getElementById(
-      'modalTitle'
-    ).textContent=
-      'Match Draw! 🤝';
-
-    document.getElementById(
-      'modalSubtitle'
-    ).textContent=
-      'Neck and neck! Play another round?';
+    statusElement.textContent='Match Draw! 🤝';
+    document.getElementById('modalTitle').textContent='Match Draw! 🤝';
+    document.getElementById('modalSubtitle').textContent='Play another round?';
   }
 
   rematchRequestedByMe=false;
   rematchRequestedByOpponent=false;
-
-  setRematchButtonState(
-    'Rematch',
-    false
-  );
-
-  setTimeout(()=>
-    document.getElementById(
-      'gameOverModal'
-    ).classList.add('active'),
-    500
-  );
+  setRematchButtonState('Rematch',false);
+  setTimeout(()=>document.getElementById('gameOverModal').classList.add('active'),500);
 }
 
 
@@ -1717,280 +1217,119 @@ function showGameResult(r){
    ========================================================= */
 
 function getRandomMove(){
-
-  const e=board
-    .map((v,i)=>v===''?i:-1)
-    .filter(i=>i>=0);
-
-  return e.length
-    ? e[Math.floor(Math.random()*e.length)]
-    : undefined;
+  const e=board.map((v,i)=>v===''?i:-1).filter(i=>i>=0);
+  return e.length?e[Math.floor(Math.random()*e.length)]:undefined;
 }
 
 function getMediumMove(){
-
   for(let i=0;i<9;i++){
-
     if(!board[i]){
-
       board[i]=opponentSymbol;
-
-      if(
-        checkWinner(board)===
-        opponentSymbol
-      ){
-
-        board[i]='';
-
-        return i;
-      }
-
+      if(checkWinner(board)===opponentSymbol){board[i]='';return i;}
       board[i]='';
     }
   }
-
   for(let i=0;i<9;i++){
-
     if(!board[i]){
-
       board[i]=mySymbol;
-
-      if(
-        checkWinner(board)===
-        mySymbol
-      ){
-
-        board[i]='';
-
-        return i;
-      }
-
+      if(checkWinner(board)===mySymbol){board[i]='';return i;}
       board[i]='';
     }
   }
-
   return getRandomMove();
 }
 
 function minimax(b,depth,maximizing){
-
   const r=checkWinner(b);
-
-  if(r===opponentSymbol)
-    return 10-depth;
-
-  if(r===mySymbol)
-    return depth-10;
-
-  if(r==='tie')
-    return 0;
+  if(r===opponentSymbol)return 10-depth;
+  if(r===mySymbol)return depth-10;
+  if(r==='tie')return 0;
 
   if(maximizing){
-
     let s=-Infinity;
-
     for(let i=0;i<9;i++){
-
       if(!b[i]){
-
         b[i]=opponentSymbol;
-
-        s=Math.max(
-          s,
-          minimax(
-            b,
-            depth+1,
-            false
-          )
-        );
-
+        s=Math.max(s,minimax(b,depth+1,false));
         b[i]='';
       }
     }
-
     return s;
-
   }else{
-
     let s=Infinity;
-
     for(let i=0;i<9;i++){
-
       if(!b[i]){
-
         b[i]=mySymbol;
-
-        s=Math.min(
-          s,
-          minimax(
-            b,
-            depth+1,
-            true
-          )
-        );
-
+        s=Math.min(s,minimax(b,depth+1,true));
         b[i]='';
       }
     }
-
     return s;
   }
 }
 
 function getHardMove(){
-
-  let best=-Infinity,
-      move;
-
+  let best=-Infinity,move;
   for(let i=0;i<9;i++){
-
-    if(!board[i]){
-
+    if(!b[i]){
       board[i]=opponentSymbol;
-
-      const s=minimax(
-        board,
-        0,
-        false
-      );
-
+      const s=minimax(board,0,false);
       board[i]='';
-
-      if(s>best){
-
-        best=s;
-        move=i;
-      }
+      if(s>best){best=s;move=i;}
     }
   }
-
   return move;
 }
 
 function makeAIMoveBasedOnDifficulty(){
-
   aiMoveTimer=null;
+  if(!isGameActive || isMyTurn)return;
 
-  if(!isGameActive || isMyTurn)
-    return;
-
-  let m=
-    currentDifficulty==='easy'
-    ? getRandomMove()
-    : currentDifficulty==='medium'
-      ? getMediumMode()
-      : getHardMove();
-
+  let m=currentDifficulty==='easy'?getRandomMove():currentDifficulty==='medium'?getMediumMode():getHardMove();
   if(m!==undefined){
-
     playClickSound();
-
     board[m]=opponentSymbol;
-
     renderBoard();
   }
 
-  if(checkGameStatus())
-    return;
-
+  if(checkGameStatus())return;
   isMyTurn=true;
-
-  statusElement.textContent=
-    `${myName||'Player'} (${mySymbol})'s turn`;
+  statusElement.textContent=`${myName||'Player'} (${mySymbol})'s turn`;
 }
 
 
 /* =========================================================
    RESET
-   ========================================================= */
+   ======================================================== */
 
 function resetGame(){
-
   clearAIMoveTimer();
-
-  document.getElementById(
-    'gameOverModal'
-  ).classList.remove('active');
-
-  board=[
-    '',
-    '',
-    '',
-    '',
-    '',
-    '',
-    '',
-    '',
-    ''
-  ];
-
+  document.getElementById('gameOverModal').classList.remove('active');
+  board=['','','','','','','','',''];
   isGameActive=true;
-
   rematchRequestedByMe=false;
   rematchRequestedByOpponent=false;
-
-  setRematchButtonState(
-    'Rematch',
-    false
-  );
-
+  setRematchButtonState('Rematch',false);
   renderBoard();
-
-  statusElement.textContent=
-    isMyTurn
-    ? `${myName||'Player'} (${mySymbol})'s turn`
-    : `${opponentName} (${opponentSymbol}) is thinking...`;
+  statusElement.textContent=isMyTurn?`${myName||'Player'} (${mySymbol})'s turn`:`${opponentName} (${opponentSymbol}) is thinking...`;
 }
 
 
 /* =========================================================
-   PAGE CLOSE
+   PAGE CLOSE & LISTENERS
    ========================================================= */
 
-window.addEventListener(
-  'beforeunload',
-  ()=>{
-    if(
-      socket &&
-      socket.readyState===WebSocket.OPEN &&
-      multiplayerMatchId
-    ){
-
-      socket.send(JSON.stringify({
-        type:'leaveMatch',
-        matchId:multiplayerMatchId
-      }));
-    }
+window.addEventListener('beforeunload',()=>{
+  if(socket && socket.readyState===WebSocket.OPEN && multiplayerMatchId){
+    socket.send(JSON.stringify({type:'leaveMatch',matchId:multiplayerMatchId}));
   }
-);
+});
 
-
-/* =========================================================
-   ENTER KEY
-   ========================================================= */
-
-document.getElementById(
-  'playerNameInput'
-).addEventListener(
-  'keydown',
-  e=>{
-    if(e.key==='Enter')
-      saveNameAndMatch();
-  }
-);
-
-document.getElementById(
-  'oxChatInput'
-).addEventListener(
-  'keydown',
-  e=>{
-    if(e.key==='Enter')
-      sendOXTypedMessage();
-  }
-);
+document.getElementById('playerNameInput').addEventListener('keydown',e=>{if(e.key==='Enter')saveNameAndMatch();});
+document.getElementById('oxChatInput').addEventListener('keydown',e=>{if(e.key==='Enter')sendOXTypedMessage();});
 
 </script>
 
 </body>
     </html>
-    
+      
