@@ -1403,6 +1403,7 @@ let isAIMode=false;
 let isPureAIMode=true;  
 let rematchRequestedByMe=false;  
 let rematchRequestedByOpponent=false;  
+let rematchDeclinedState=false;  
 let matchmakingActive=false;  
 let reconnectTimer=null;  
 let rematchToastTimer=null;  
@@ -1432,7 +1433,10 @@ function setRematchButtonState(text,disabled){
 const button=document.getElementById("rematchBtnModal");  
 if(button){button.textContent=text;button.disabled=disabled;}  
 }  
-function resetRematchButton(){setRematchButtonState("Rematch",false);}  
+function resetRematchButton(){  
+rematchDeclinedState=false;  
+setRematchButtonState("Rematch",false);  
+}  
 function hideRematchToast(){  
 const toast=document.getElementById("rematchToast");  
 if(toast){toast.classList.remove("show");}  
@@ -1491,6 +1495,7 @@ clearMatchmakingFallbackTimer();
 matchmakingActive=false;  
 rematchRequestedByMe=false;  
 rematchRequestedByOpponent=false;  
+rematchDeclinedState=false;  
 hideRematchToast();  
 document.body.classList.remove("multiplayer-mode");  
 cleanupSocket();  
@@ -1649,6 +1654,7 @@ clearReconnectTimer();
 matchmakingActive=false;  
 rematchRequestedByMe=false;  
 rematchRequestedByOpponent=false;  
+rematchDeclinedState=false;  
 multiplayerMatchId=m.matchId||null;  
 opponentName=m.opponentName||getRandomRealName();  
 mySymbol=m.symbol==="X"||m.symbol==="O"?m.symbol:"O";  
@@ -1697,6 +1703,7 @@ invalidateGameTimers();
 hideRematchToast();  
 rematchRequestedByMe=false;  
 rematchRequestedByOpponent=false;  
+rematchDeclinedState=false;  
 if(m.matchId){multiplayerMatchId=m.matchId;}  
 if(m.symbol==="X"||m.symbol==="O"){mySymbol=m.symbol;}  
 opponentSymbol=mySymbol==="X"?"O":"X";  
@@ -1713,12 +1720,13 @@ return;
 if(m.type==="rematchDeclined"){  
 rematchRequestedByMe=false;  
 rematchRequestedByOpponent=false;  
-setRematchButtonState("Rematch",false);  
+rematchDeclinedState=true;  
+setRematchButtonState("Rematch Declined",true);  
 const title=document.getElementById("modalTitle");  
 title.classList.remove("accepted");  
 title.classList.add("declined");  
 title.textContent="Rematch Declined ❌";  
-document.getElementById("modalSubtitle").textContent="Your opponent declined. You can try again.";  
+document.getElementById("modalSubtitle").textContent="Your opponent declined. You cannot rematch.";  
 document.getElementById("gameOverModal").classList.add("active");  
 return;  
 }  
@@ -1727,6 +1735,7 @@ invalidateGameTimers();
 isGameActive=false;  
 rematchRequestedByMe=false;  
 rematchRequestedByOpponent=false;  
+rematchDeclinedState=false;  
 setStatus("Opponent left the match.");  
 const title=document.getElementById("modalTitle");  
 title.classList.remove("declined","accepted");  
@@ -1757,6 +1766,7 @@ isPureAIMode=false;
 document.body.classList.add("multiplayer-mode");  
 rematchRequestedByMe=false;  
 rematchRequestedByOpponent=false;  
+rematchDeclinedState=false;  
 hideRematchToast();  
 matchmakingActive=true;  
 if(socket&&socket.readyState===WebSocket.OPEN){  
@@ -1815,11 +1825,12 @@ makeAIMoveBasedOnDifficulty();
   
 function requestRematch(){  
 playClickSound();  
+if(rematchDeclinedState){return;}  
 if(isAIMode&&isPureAIMode){startAIMatch(currentDifficulty);return;}  
 if(isAIMode&&!isPureAIMode){  
 if(rematchRequestedByMe||rematchDecisionTimer||rematchStartTimer){return;}  
 rematchRequestedByMe=true;  
-setRematchButtonState("AI deciding...",true);  
+setRematchButtonState("Player deciding...",true);  
 const title=document.getElementById("modalTitle");  
 title.classList.remove("declined","accepted");  
 title.textContent="Rematch Request 🔁";  
@@ -1833,12 +1844,13 @@ const accepted=Math.random()<0.40;
 if(!accepted){  
 rematchRequestedByMe=false;  
 rematchRequestedByOpponent=false;  
-setRematchButtonState("Rematch",false);  
+rematchDeclinedState=true;  
+setRematchButtonState("Rematch Declined",true);  
 const title=document.getElementById("modalTitle");  
 title.classList.remove("accepted");  
 title.classList.add("declined");  
 title.textContent="Rematch Declined ❌";  
-document.getElementById("modalSubtitle").textContent=`${opponentName} declined. Try again?`;  
+document.getElementById("modalSubtitle").textContent=`${opponentName} declined. You cannot rematch.`;  
 document.getElementById("gameOverModal").classList.add("active");  
 return;  
 }  
@@ -1846,7 +1858,7 @@ setRematchButtonState("Accepted ✓",true);
 const title=document.getElementById("modalTitle");  
 title.classList.remove("declined");  
 title.classList.add("accepted");  
-title.textContent="Rematch Accepted Tic ✅";  
+title.textContent="Rematch Accepted";  
 document.getElementById("modalSubtitle").textContent="Preparing the next round...";  
 const startDelay=randomRematchStartDelay();  
 rematchStartTimer=setTimeout(()=>{  
@@ -1865,7 +1877,7 @@ setRematchButtonState("Starting...",true);
 const title=document.getElementById("modalTitle");  
 title.classList.remove("declined");  
 title.classList.add("accepted");  
-title.textContent="Rematch Accepted Tic ✅";  
+title.textContent="Rematch Accepted";  
 document.getElementById("modalSubtitle").textContent="Starting round...";  
 safelySend({type:"rematchAccept",matchId:multiplayerMatchId});  
 return;  
@@ -1885,6 +1897,7 @@ if(!isAIMode||isPureAIMode){rematchRequestedByMe=false;resetRematchButton();retu
 invalidateGameTimers();  
 rematchRequestedByMe=false;  
 rematchRequestedByOpponent=false;  
+rematchDeclinedState=false;  
 mySymbol=mySymbol==="X"?"O":"X";  
 opponentSymbol=mySymbol==="X"?"O":"X";  
 isMyTurn=Math.random()<0.5;  
@@ -1977,8 +1990,9 @@ document.getElementById("modalSubtitle").textContent="Play another round?";
 }  
 rematchRequestedByMe=false;  
 rematchRequestedByOpponent=false;  
+rematchDeclinedState=false;  
 clearRematchTimers();  
-setRematchButtonState("Rematch",false);  
+resetRematchButton();  
 const resultRound=gameRoundId;  
 setTimeout(()=>{  
 if(resultRound!==gameRoundId){return;}  
@@ -2101,6 +2115,7 @@ board=["","","","","","","","",""];
 isGameActive=true;  
 rematchRequestedByMe=false;  
 rematchRequestedByOpponent=false;  
+rematchDeclinedState=false;  
 resetRematchButton();  
 renderBoard();  
 setStatus(isMyTurn?`${myName||"Player"} (${mySymbol})'s turn`:`${opponentName} (${opponentSymbol}) is thinking...`);  
@@ -2127,3 +2142,4 @@ else{socket.send(JSON.stringify({type:"leaveQueue"}));}
 </script>  
 </body>  
 </html>
+
